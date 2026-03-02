@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Bangers, JetBrains_Mono } from 'next/font/google'
+import { PageLayout } from '@/components/PageLayout'
 import './globals.css'
 
 const bangers = Bangers({
@@ -27,7 +28,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${bangers.variable} ${jetbrainsMono.variable}`}>
-      <body className={jetbrainsMono.className}>{children}</body>
+      <body style={{ margin: 0, padding: 0 }}>
+        <PageLayout>{children}</PageLayout>
+      </body>
     </html>
   )
 }
