@@ -3,42 +3,33 @@
 @tailwind utilities;
 
 /* ============================================================
-   DESIGN TOKENS — All CSS custom properties for the portfolio
-   Colors locked from PROJECT.md
+   DESIGN TOKENS — One Piece "Grand Voyage" palette
    ============================================================ */
 
 :root {
-  /* Color tokens */
-  --color-bg-dark: #0d0d0d;
-  --color-bg-panel: #111111;
-  --color-terminal-green: #00ff41;
-  --color-terminal-green-dim: rgba(0, 255, 65, 0.3);
-  --color-manga-red: #ff2d55;
-  --color-manga-red-dim: rgba(255, 45, 85, 0.3);
-  --color-manga-yellow: #FFD700;
-  --color-manga-yellow-dim: rgba(255, 215, 0, 0.3);
-  --color-text: #ffffff;
-  --color-ink: #1a1a1a;
-  --color-ink-dim: rgba(255, 255, 255, 0.05);
-
-  /* Border tokens — hand-drawn ink feel */
-  --border-ink: 3px solid #ffffff;
-  --border-ink-thick: 5px solid #ffffff;
-  --border-terminal: 1px solid var(--color-terminal-green);
-  --border-manga: 3px solid var(--color-manga-red);
+  /* Core palette */
+  --color-ocean-deep: #071120;
+  --color-ocean-dark: #0a192f;
+  --color-luffy-red: #D70000;
+  --color-luffy-red-dim: rgba(215, 0, 0, 0.35);
+  --color-gold: #FFCE00;
+  --color-gold-dim: rgba(255, 206, 0, 0.3);
+  --color-sky-blue: #60BFF5;
+  --color-sky-blue-dim: rgba(96, 191, 245, 0.3);
+  --color-bronze: #DFC18A;
+  --color-white: #FEFEFE;
+  --color-glass: rgba(15, 30, 50, 0.8);
+  --color-glass-border: rgba(96, 191, 245, 0.15);
 
   /* Font tokens */
-  --font-manga: var(--font-bangers), 'Bangers', cursive;
-  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', 'Courier New', monospace;
-
-  /* Spacing tokens */
-  --panel-gap: 12px;
-  --panel-padding: 24px;
+  --font-display: var(--font-bangers), 'Bangers', cursive;
+  --font-body: var(--font-poppins), 'Poppins', sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
 
   /* Effect tokens */
-  --glow-terminal: 0 0 10px var(--color-terminal-green), 0 0 20px var(--color-terminal-green-dim);
-  --glow-manga: 0 0 10px var(--color-manga-red), 0 0 20px var(--color-manga-red-dim);
-  --shadow-ink: 4px 4px 0px rgba(255, 255, 255, 0.1);
+  --glow-red: 0 0 12px var(--color-luffy-red-dim), 0 0 24px rgba(215, 0, 0, 0.15);
+  --glow-gold: 0 0 12px var(--color-gold-dim), 0 0 24px rgba(255, 206, 0, 0.15);
+  --glow-blue: 0 0 12px var(--color-sky-blue-dim), 0 0 24px rgba(96, 191, 245, 0.15);
 }
 
 /* ============================================================
@@ -47,82 +38,190 @@
 
 @layer base {
   html {
-    background-color: var(--color-bg-dark);
-    color: var(--color-text);
-    font-family: var(--font-mono);
+    background-color: var(--color-ocean-deep);
+    color: var(--color-white);
+    font-family: var(--font-body);
     scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-bg-dark);
+    background-color: var(--color-ocean-deep);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Selection uses terminal green */
   ::selection {
-    background-color: var(--color-terminal-green);
-    color: var(--color-bg-dark);
+    background-color: var(--color-gold);
+    color: var(--color-ocean-deep);
   }
 
-  /* Scrollbar — manga dark theme */
   ::-webkit-scrollbar {
     width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--color-bg-dark);
+    background: var(--color-ocean-deep);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: var(--color-terminal-green);
-    border-radius: 0;
+    background: var(--color-luffy-red);
+    border-radius: 3px;
   }
 }
 
 /* ============================================================
-   UTILITY CLASSES (non-Tailwind overrides)
+   UTILITY CLASSES
    ============================================================ */
 
 @layer utilities {
-  .font-manga {
-    font-family: var(--font-manga);
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
   }
 
   .font-mono {
     font-family: var(--font-mono);
   }
 
-  .text-glow-green {
-    text-shadow: 0 0 10px var(--color-terminal-green), 0 0 20px var(--color-terminal-green-dim);
+  /* ── Text glow effects ───────────────────────────────────── */
+
+  .text-glow-gold {
+    text-shadow: 0 0 10px var(--color-gold-dim), 0 0 30px rgba(255, 206, 0, 0.15);
   }
 
   .text-glow-red {
-    text-shadow: 0 0 10px var(--color-manga-red), 0 0 20px var(--color-manga-red-dim);
+    text-shadow: 0 0 10px var(--color-luffy-red-dim), 0 0 30px rgba(215, 0, 0, 0.15);
   }
 
-  .border-ink-hand {
-    border: var(--border-ink);
-    /* Slightly irregular feel via box-shadow offset */
-    box-shadow: var(--shadow-ink);
+  .text-glow-blue {
+    text-shadow: 0 0 10px var(--color-sky-blue-dim), 0 0 30px rgba(96, 191, 245, 0.15);
   }
 
-  /* Impact text — manga-style outlined type for punchy moments */
+  /* ── Glass card ──────────────────────────────────────────── */
+
+  .glass-card {
+    background: var(--color-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--color-glass-border);
+  }
+
+  /* ── Manga text impact ───────────────────────────────────── */
+
   .text-impact {
-    font-family: var(--font-manga);
-    color: var(--color-manga-yellow);
-    -webkit-text-stroke: 2px #000;
-    text-shadow: 3px 3px 0 #000;
+    font-family: var(--font-display);
+    color: var(--color-gold);
+    -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.6);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
     letter-spacing: 0.05em;
   }
 
-  /* Speed-lines background — radiating from left-center like a manga action panel */
-  .panel-speed-lines {
-    background-image: repeating-conic-gradient(
-      from 0deg at 15% 50%,
-      transparent 0deg 8.5deg,
-      rgba(0, 255, 65, 0.025) 8.5deg 9deg
+  /* ── Manga panel border ──────────────────────────────────── */
+
+  .manga-panel {
+    position: relative;
+    border: 3px solid rgba(215, 0, 0, 0.3);
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.5),
+                inset 0 0 40px rgba(0, 0, 0, 0.3),
+                0 0 20px rgba(215, 0, 0, 0.06);
+  }
+
+  .manga-panel::before,
+  .manga-panel::after {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+  }
+
+  .manga-panel::before {
+    top: -1px;
+    left: -1px;
+    border-top: 4px solid rgba(215, 0, 0, 0.6);
+    border-left: 4px solid rgba(215, 0, 0, 0.6);
+  }
+
+  .manga-panel::after {
+    bottom: -1px;
+    right: -1px;
+    border-bottom: 4px solid rgba(215, 0, 0, 0.6);
+    border-right: 4px solid rgba(215, 0, 0, 0.6);
+  }
+
+  /* ── Section divider — decorative horizontal rule ────────── */
+
+  .section-divider {
+    position: relative;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(215, 0, 0, 0.4) 20%,
+      rgba(255, 206, 0, 0.3) 50%,
+      rgba(215, 0, 0, 0.4) 80%,
+      transparent 100%
     );
   }
+
+  .section-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    background: var(--color-luffy-red);
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(215, 0, 0, 0.5);
+  }
+
+  /* ── Red accent line (vertical or horizontal) ────────────── */
+
+  .accent-line-h {
+    height: 3px;
+    background: linear-gradient(90deg, var(--color-luffy-red), transparent);
+  }
+
+  .accent-line-v {
+    width: 3px;
+    background: linear-gradient(180deg, var(--color-luffy-red), transparent);
+  }
+}
+
+/* ============================================================
+   SECTION TRANSITION OVERLAYS
+   ============================================================ */
+
+.section-fade-top {
+  position: relative;
+}
+
+.section-fade-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, var(--color-ocean-deep), transparent);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.section-fade-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, var(--color-ocean-deep), transparent);
+  pointer-events: none;
+  z-index: 1;
 }

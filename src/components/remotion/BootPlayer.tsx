@@ -2,31 +2,26 @@
 
 import React from 'react'
 import { Player } from '@remotion/player'
-import { BootSequence } from './BootSequence'
+import { OceanIntro } from './OceanIntro'
 
 /**
- * BootPlayer — Remotion Player wrapper for the BootSequence composition.
- *
+ * BootPlayer — Remotion Player wrapper for the OceanIntro composition.
  * Renders an inline video player (no chrome, autoplay, looping) that plays
- * the cinematic boot sequence intro. Designed to sit inside the hero
- * MangaPanel as a background-style element.
- *
- * Uses @remotion/player to embed Remotion compositions in a Next.js page
- * without needing a separate Remotion project structure.
+ * the cinematic ocean intro. Used as ambient background in the hero section.
  */
 export function BootPlayer() {
   return (
     <div
       style={{
         width: '100%',
-        aspectRatio: '16 / 9',
-        maxHeight: '340px',
-        overflow: 'hidden',
-        borderRadius: '2px',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
       }}
     >
       <Player
-        component={BootSequence}
+        component={OceanIntro}
         compositionWidth={1280}
         compositionHeight={720}
         durationInFrames={240}
