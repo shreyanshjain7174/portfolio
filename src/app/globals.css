@@ -2,7 +2,107 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   DESIGN TOKENS — All CSS custom properties for the portfolio
+   Colors locked from PROJECT.md
+   ============================================================ */
+
 :root {
+  /* Color tokens */
+  --color-bg-dark: #0d0d0d;
+  --color-bg-panel: #111111;
+  --color-terminal-green: #00ff41;
+  --color-terminal-green-dim: rgba(0, 255, 65, 0.3);
+  --color-manga-red: #ff2d55;
+  --color-manga-red-dim: rgba(255, 45, 85, 0.3);
+  --color-text: #ffffff;
+  --color-ink: #1a1a1a;
+  --color-ink-dim: rgba(255, 255, 255, 0.05);
+
+  /* Border tokens — hand-drawn ink feel */
+  --border-ink: 3px solid #ffffff;
+  --border-ink-thick: 5px solid #ffffff;
+  --border-terminal: 1px solid var(--color-terminal-green);
+  --border-manga: 3px solid var(--color-manga-red);
+
+  /* Font tokens */
   --font-manga: var(--font-bangers), 'Bangers', cursive;
   --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', 'Courier New', monospace;
+
+  /* Spacing tokens */
+  --panel-gap: 12px;
+  --panel-padding: 24px;
+
+  /* Effect tokens */
+  --glow-terminal: 0 0 10px var(--color-terminal-green), 0 0 20px var(--color-terminal-green-dim);
+  --glow-manga: 0 0 10px var(--color-manga-red), 0 0 20px var(--color-manga-red-dim);
+  --shadow-ink: 4px 4px 0px rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+
+@layer base {
+  html {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text);
+    font-family: var(--font-mono);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-bg-dark);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Selection uses terminal green */
+  ::selection {
+    background-color: var(--color-terminal-green);
+    color: var(--color-bg-dark);
+  }
+
+  /* Scrollbar — manga dark theme */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-dark);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-terminal-green);
+    border-radius: 0;
+  }
+}
+
+/* ============================================================
+   UTILITY CLASSES (non-Tailwind overrides)
+   ============================================================ */
+
+@layer utilities {
+  .font-manga {
+    font-family: var(--font-manga);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+
+  .text-glow-green {
+    text-shadow: 0 0 10px var(--color-terminal-green), 0 0 20px var(--color-terminal-green-dim);
+  }
+
+  .text-glow-red {
+    text-shadow: 0 0 10px var(--color-manga-red), 0 0 20px var(--color-manga-red-dim);
+  }
+
+  .border-ink-hand {
+    border: var(--border-ink);
+    /* Slightly irregular feel via box-shadow offset */
+    box-shadow: var(--shadow-ink);
+  }
 }
