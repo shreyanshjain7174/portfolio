@@ -7,7 +7,8 @@
  * - Position: fixed (covers entire viewport including during scroll)
  * - Z-index: 10 (above content layers, below modals)
  * - pointer-events: none (never blocks user interaction)
- * - Opacity: very low (0.04) — texture, not obstruction
+ * - Opacity: 0.10 — visible texture without obscuring content
+ * - Dot size: 8px grid, 1.5px radius — crisp halftone look on dark backgrounds
  */
 export function HalftoneOverlay() {
   return (
@@ -18,9 +19,9 @@ export function HalftoneOverlay() {
         inset: 0,
         zIndex: 10,
         pointerEvents: 'none',
-        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)',
-        backgroundSize: '6px 6px',
-        opacity: 0.04,
+        backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.12) 1.5px, transparent 1.5px)',
+        backgroundSize: '8px 8px',
+        opacity: 0.10,
         mixBlendMode: 'screen',
       }}
     />

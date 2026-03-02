@@ -15,6 +15,8 @@ const config: Config = {
         'terminal-green-dim': 'var(--color-terminal-green-dim)',
         'manga-red': 'var(--color-manga-red)',
         'manga-red-dim': 'var(--color-manga-red-dim)',
+        'manga-yellow': 'var(--color-manga-yellow)',
+        'manga-yellow-dim': 'var(--color-manga-yellow-dim)',
         'ink': 'var(--color-ink)',
         'ink-dim': 'var(--color-ink-dim)',
       },
@@ -30,6 +32,7 @@ const config: Config = {
         'terminal': '0 0 10px var(--color-terminal-green), 0 0 20px var(--color-terminal-green-dim)',
         'manga-red': '0 0 10px var(--color-manga-red), 0 0 20px var(--color-manga-red-dim)',
         'ink': '4px 4px 0px var(--color-ink)',
+        'impact': '0 0 0 3px #000, 4px 4px 0 rgba(255,215,0,0.5)',
       },
       backgroundImage: {
         'halftone': 'radial-gradient(circle, var(--color-ink-dim) 1px, transparent 1px)',

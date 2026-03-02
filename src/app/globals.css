@@ -15,6 +15,8 @@
   --color-terminal-green-dim: rgba(0, 255, 65, 0.3);
   --color-manga-red: #ff2d55;
   --color-manga-red-dim: rgba(255, 45, 85, 0.3);
+  --color-manga-yellow: #FFD700;
+  --color-manga-yellow-dim: rgba(255, 215, 0, 0.3);
   --color-text: #ffffff;
   --color-ink: #1a1a1a;
   --color-ink-dim: rgba(255, 255, 255, 0.05);
@@ -104,5 +106,23 @@
     border: var(--border-ink);
     /* Slightly irregular feel via box-shadow offset */
     box-shadow: var(--shadow-ink);
+  }
+
+  /* Impact text — manga-style outlined type for punchy moments */
+  .text-impact {
+    font-family: var(--font-manga);
+    color: var(--color-manga-yellow);
+    -webkit-text-stroke: 2px #000;
+    text-shadow: 3px 3px 0 #000;
+    letter-spacing: 0.05em;
+  }
+
+  /* Speed-lines background — radiating from left-center like a manga action panel */
+  .panel-speed-lines {
+    background-image: repeating-conic-gradient(
+      from 0deg at 15% 50%,
+      transparent 0deg 8.5deg,
+      rgba(0, 255, 65, 0.025) 8.5deg 9deg
+    );
   }
 }

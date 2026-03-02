@@ -12,6 +12,10 @@ interface PageLayoutProps {
  * and provides the base dark background. All page content renders
  * inside the children slot at z-index 1 (below overlays).
  *
+ * The contrast(1.02) brightness(0.97) filter is the single biggest
+ * "cheap → cinematic" toggle — it adds micro-contrast that makes the
+ * dark panels feel like printed ink rather than flat #111 boxes.
+ *
  * Use in src/app/layout.tsx to wrap {children}.
  */
 export function PageLayout({ children }: PageLayoutProps) {
@@ -22,6 +26,7 @@ export function PageLayout({ children }: PageLayoutProps) {
         minHeight: '100vh',
         backgroundColor: '#0d0d0d',
         color: '#ffffff',
+        filter: 'contrast(1.02) brightness(0.97)',
       }}
     >
       {/* Visual overlays — fixed, pointer-events: none */}
