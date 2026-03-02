@@ -1,13 +1,106 @@
+'use client'
+
+import { useRef, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { animate } from 'animejs'
+import dynamic from 'next/dynamic'
 import { MangaGrid, MangaPanel } from '@/components/MangaPanel'
+import { useTypewriter } from '@/hooks/useTypewriter'
+
+/* ── Remotion Player: lazy-loaded to avoid SSR issues ────────────────── */
+const BootPlayer = dynamic(() => import('@/components/remotion/BootPlayer'), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        width: '100%',
+        aspectRatio: '16/9',
+        maxHeight: '340px',
+        backgroundColor: '#0d0d0d',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontFamily: 'var(--font-mono, monospace)',
+        color: 'rgba(0,255,65,0.3)',
+        fontSize: '0.75rem',
+        letterSpacing: '0.2em',
+      }}
+    >
+      LOADING CINEMATIC...
+    </div>
+  ),
+})
+
+/* ── Framer Motion: staggered panel entrance ────────────────────────── */
+const panelEntrance = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.18, duration: 0.55, ease: 'easeOut' as const },
+  }),
+}
 
 export default function Home() {
+  /* ── Typewriter for BOOT SEQUENCE terminal lines ───────────────────── */
+  const { displayedLines, isComplete } = useTypewriter({
+    lines: [
+      '$ sudo hire_me --force --no-regrets',
+      '[██████████] 100%  —  SYSTEMS ONLINE',
+    ],
+    speed: 35,
+    lineDelay: 500,
+    startDelay: 800,
+  })
+
+  /* ── anime.js: progress bar fill + counter ─────────────────────────── */
+  const progressBarRef = useRef<HTMLDivElement>(null)
+  const counterRef = useRef<HTMLSpanElement>(null)
+  const animatedRef = useRef(false)
+
+  useEffect(() => {
+    if (animatedRef.current) return
+    animatedRef.current = true
+
+    // Animate progress bar width from 0% to 80% (anime.js v4)
+    if (progressBarRef.current) {
+      animate(progressBarRef.current, {
+        width: ['0%', '80%'],
+        duration: 1800,
+        delay: 600,
+        ease: 'outExpo',
+      })
+    }
+
+    // Animate counter from 0 to 9500 (anime.js v4)
+    if (counterRef.current) {
+      const el = counterRef.current
+      const counter = { value: 0 }
+      animate(counter, {
+        value: [0, 9500],
+        duration: 2000,
+        delay: 600,
+        ease: 'outExpo',
+        onUpdate: () => {
+          el.textContent = Math.round(counter.value).toLocaleString()
+        },
+      })
+    }
+  }, [])
+
   return (
     <main className="min-h-screen p-4 md:p-8">
       <MangaGrid>
 
         {/* ── Panel 1: Hero / Boot Sequence ─────────────────────────────────── */}
         <MangaPanel colSpan={2} label="BOOT SEQUENCE" variant="hero">
-          <div className="p-6 flex flex-col justify-center gap-3">
+          <motion.div
+            custom={0}
+            initial="hidden"
+            animate="visible"
+            variants={panelEntrance}
+            className="p-6 flex flex-col justify-center gap-3"
+          >
             <h1
               style={{
                 fontFamily: 'var(--font-manga, Bangers, cursive)',
@@ -32,9 +125,53 @@ export default function Home() {
                 textTransform: 'uppercase',
               }}
             >
-              SOFTWARE ENGINEER · DISTRIBUTED SYSTEMS · OSS TROUBLEMAKER
+              SOFTWARE ENGINEER · DISTRIBUTED SYSTEMS · OSS CONTRIBUTOR
             </p>
 
+            {/* Social links */}
+            <div
+              style={{
+                fontFamily: 'var(--font-mono, monospace)',
+                fontSize: '0.7rem',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+                marginTop: '0.25rem',
+              }}
+            >
+              <a
+                href="https://github.com/shreyanshjain7174"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'rgba(0,255,65,0.7)', textDecoration: 'none' }}
+              >
+                {'>'} github
+              </a>
+              <a
+                href="https://linkedin.com/in/shreyansh-sancheti"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'rgba(0,255,65,0.7)', textDecoration: 'none' }}
+              >
+                {'>'} linkedin
+              </a>
+              <a
+                href="https://instagram.com/shrey_sancheti"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'rgba(0,255,65,0.7)', textDecoration: 'none' }}
+              >
+                {'>'} instagram
+              </a>
+              <a
+                href="mailto:hire.ssancheti@gmail.com"
+                style={{ color: 'rgba(0,255,65,0.7)', textDecoration: 'none' }}
+              >
+                {'>'} mail
+              </a>
+            </div>
+
+            {/* Typewriter terminal lines */}
             <div
               style={{
                 fontFamily: 'var(--font-mono, monospace)',
@@ -43,34 +180,80 @@ export default function Home() {
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '0.3rem',
+                minHeight: '3rem',
               }}
             >
-              <p style={{ color: 'rgba(0,255,65,0.6)' }}>
-                {'$'} sudo hire_me --force --no-regrets
-              </p>
-              <p style={{ color: 'rgba(255,255,255,0.7)', letterSpacing: '0.05em' }}>
-                [██████████] 100%&nbsp;&nbsp;—&nbsp;&nbsp;FULLY LOADED
-              </p>
+              {displayedLines.map((line, idx) => (
+                <p
+                  key={idx}
+                  style={{
+                    color:
+                      idx === 0
+                        ? 'rgba(0,255,65,0.6)'
+                        : 'rgba(255,255,255,0.7)',
+                    letterSpacing: idx === 1 ? '0.05em' : undefined,
+                  }}
+                >
+                  {line}
+                  {/* Blinking cursor on the line currently being typed */}
+                  {!isComplete &&
+                    idx === displayedLines.length - 1 && (
+                      <span className="inline-block animate-cursor-blink ml-0.5">
+                        ▌
+                      </span>
+                    )}
+                </p>
+              ))}
+              {/* Persistent cursor after all lines typed */}
+              {isComplete && (
+                <p style={{ color: 'rgba(0,255,65,0.6)' }}>
+                  <span className="inline-block animate-cursor-blink">▌</span>
+                </p>
+              )}
             </div>
-          </div>
+          </motion.div>
         </MangaPanel>
 
         {/* ── Panel 2: Power Level ──────────────────────────────────────────── */}
         <MangaPanel label="POWER LEVEL" variant="accent">
-          <div
+          <motion.div
+            custom={1}
+            initial="hidden"
+            animate="visible"
+            variants={panelEntrance}
             className="p-5 flex flex-col gap-2"
             style={{ minHeight: '200px' }}
           >
+            {/* Animated progress bar using anime.js */}
             <div
               style={{
+                position: 'relative',
                 fontFamily: 'var(--font-mono, monospace)',
-                color: '#ff2d55',
                 fontSize: '1.6rem',
                 letterSpacing: '0.05em',
-                textShadow: '0 0 10px rgba(255,45,85,0.4)',
+                overflow: 'hidden',
               }}
             >
-              ████████░░
+              {/* Background — dim blocks */}
+              <div style={{ color: 'rgba(255,255,255,0.08)' }}>
+                ██████████
+              </div>
+              {/* Foreground — animated fill */}
+              <div
+                ref={progressBarRef}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '0%',
+                  overflow: 'hidden',
+                  color: '#ff2d55',
+                  textShadow: '0 0 10px rgba(255,45,85,0.4)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                ██████████
+              </div>
             </div>
 
             <p
@@ -80,7 +263,7 @@ export default function Home() {
                 fontSize: '0.85rem',
               }}
             >
-              9,500 / 10,000
+              <span ref={counterRef}>0</span> / 10,000
             </p>
 
             <p
@@ -98,6 +281,7 @@ export default function Home() {
 
             <div style={{ marginTop: 'auto', paddingTop: '0.75rem' }}>
               <span
+                className="inline-block animate-glow-pulse"
                 style={{
                   fontFamily: 'var(--font-mono, monospace)',
                   color: '#00ff41',
@@ -111,15 +295,21 @@ export default function Home() {
                 [ACTIVE]
               </span>
             </div>
-          </div>
+          </motion.div>
         </MangaPanel>
 
         {/* ── Panel 3: Active Side Quests ───────────────────────────────────── */}
         <MangaPanel colSpan={3} label="ACTIVE SIDE QUESTS" variant="default">
-          <div className="p-5">
+          <motion.div
+            custom={2}
+            initial="hidden"
+            animate="visible"
+            variants={panelEntrance}
+            className="p-5"
+          >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-              {/* Quest 1 */}
+              {/* Quest 1 — Arista / Networking */}
               <div
                 style={{
                   fontFamily: 'var(--font-mono, monospace)',
@@ -144,7 +334,7 @@ export default function Home() {
                     lineHeight: 1.45,
                   }}
                 >
-                  Make Kubernetes do something useful
+                  Eliminate packet loss at 400G+ throughput
                 </p>
                 <p
                   style={{
@@ -154,11 +344,11 @@ export default function Home() {
                     letterSpacing: '0.08em',
                   }}
                 >
-                  STATUS: SHIP IT OR YOLO
+                  STATUS: ZERO PACKET DROP ACHIEVED
                 </p>
               </div>
 
-              {/* Quest 2 */}
+              {/* Quest 2 — Ceph / Open Source */}
               <div
                 style={{
                   fontFamily: 'var(--font-mono, monospace)',
@@ -183,7 +373,7 @@ export default function Home() {
                     lineHeight: 1.45,
                   }}
                 >
-                  Convince distributed systems to just... agree
+                  Ship 15+ PRs to Ceph upstream
                 </p>
                 <p
                   style={{
@@ -193,11 +383,11 @@ export default function Home() {
                     letterSpacing: '0.08em',
                   }}
                 >
-                  STATUS: ETERNAL NEGOTIATION
+                  STATUS: MERGED & DEPLOYED
                 </p>
               </div>
 
-              {/* Quest 3 */}
+              {/* Quest 3 — K8s / Infrastructure */}
               <div
                 style={{
                   fontFamily: 'var(--font-mono, monospace)',
@@ -222,7 +412,7 @@ export default function Home() {
                     lineHeight: 1.45,
                   }}
                 >
-                  Write code humans can actually read
+                  Orchestrate 500+ VMs on Kubernetes
                 </p>
                 <p
                   style={{
@@ -232,7 +422,7 @@ export default function Home() {
                     letterSpacing: '0.08em',
                   }}
                 >
-                  STATUS: ONGOING (ง •̀_•́)ง
+                  STATUS: 99.9% UPTIME (ง •̀_•́)ง
                 </p>
               </div>
 
@@ -253,10 +443,23 @@ export default function Home() {
             >
               {'>'} current_status:{' '}
               <span style={{ color: '#00ff41', textShadow: '0 0 6px rgba(0,255,65,0.4)' }}>
-                &quot;CAUSING PRODUCTIVE CHAOS&quot;
+                &quot;SHIPPING CODE AT ARISTA + BUILDING INFRA AT XBATTERY&quot;
               </span>
             </div>
-          </div>
+          </motion.div>
+        </MangaPanel>
+
+        {/* ── Panel 4: Cinematic Intro (Remotion) ──────────────────────────── */}
+        <MangaPanel colSpan={3} label="CINEMATIC INTRO" variant="featured">
+          <motion.div
+            custom={3}
+            initial="hidden"
+            animate="visible"
+            variants={panelEntrance}
+            className="p-4"
+          >
+            <BootPlayer />
+          </motion.div>
         </MangaPanel>
 
       </MangaGrid>
