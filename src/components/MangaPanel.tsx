@@ -73,8 +73,13 @@ export function MangaPanel({
   variant = 'default',
   label,
 }: MangaPanelProps) {
-  const colSpanClass =
-    colSpan === 3 ? 'col-span-3' : colSpan === 2 ? 'col-span-2' : 'col-span-1'
+  // Responsive col-span: panels collapse to 1-col on mobile, expand at breakpoints
+  const colSpanMap: Record<1 | 2 | 3, string> = {
+    1: 'col-span-1',
+    2: 'col-span-1 md:col-span-2',
+    3: 'col-span-1 md:col-span-2 lg:col-span-3',
+  }
+  const colSpanClass = colSpanMap[colSpan]
   const rowSpanClass = rowSpan === 2 ? 'row-span-2' : 'row-span-1'
 
   // Hero variant: CSS-only speed lines radiating from left-center — no SVG needed
@@ -96,6 +101,7 @@ export function MangaPanel({
         colSpanClass,
         rowSpanClass,
         'overflow-hidden',
+        'transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:brightness-[1.03]',
         className,
       ].join(' ')}
       style={heroStyle}
@@ -144,7 +150,9 @@ export function MangaGrid({
         'md:grid-cols-2',     // tablet: 2 columns
         'lg:grid-cols-3',     // desktop: 3 columns
         'gap-[12px]',         // --panel-gap
-        'auto-rows-[minmax(200px,auto)]',
+        'auto-rows-[minmax(140px,auto)]',    // mobile
+        'md:auto-rows-[minmax(180px,auto)]', // tablet
+        'lg:auto-rows-[minmax(200px,auto)]', // desktop
         className,
       ].join(' ')}
     >
