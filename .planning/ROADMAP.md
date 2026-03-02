@@ -15,7 +15,7 @@
 **Plans:** 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Next.js 14 scaffold: App Router, TypeScript, Tailwind, anime.js, Framer Motion, Google Fonts
+- [x] 01-01-PLAN.md — Next.js 14 scaffold: App Router, TypeScript, Tailwind, anime.js, Framer Motion, Google Fonts (DONE 2026-03-02)
 - [ ] 01-02-PLAN.md — Design tokens: Tailwind config + CSS custom properties (colors, fonts, effects)
 - [ ] 01-03-PLAN.md — Visual components: MangaPanel grid, HalftoneOverlay, CRTOverlay, PageLayout
 
@@ -154,4 +154,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-03-02*
-*Last updated: 2026-03-02 after requirements definition*
+*Last updated: 2026-03-02 — 01-01 complete (scaffold)*

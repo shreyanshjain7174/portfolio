@@ -54,7 +54,7 @@
 
 - [ ] **DS-01**: Dark background base (#0d0d0d) with terminal green (#00ff41) + manga red (#ff2d55) accents
 - [ ] **DS-02**: CSS custom properties for all design tokens (colors, fonts, spacing)
-- [ ] **DS-03**: Bangers font for display headings, JetBrains Mono for code/body text
+- [x] **DS-03**: Bangers font for display headings, JetBrains Mono for code/body text
 - [ ] **DS-04**: Manga panel grid layout system with asymmetric ink borders
 - [ ] **DS-05**: Halftone dot pattern texture overlays
 - [ ] **DS-06**: CRT scanline overlay effect on entire site
@@ -69,9 +69,9 @@
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Next.js 14 App Router project scaffolding
-- [ ] **INFRA-02**: Tailwind CSS configured with custom design tokens
-- [ ] **INFRA-03**: anime.js + Framer Motion animation libraries integrated
+- [x] **INFRA-01**: Next.js 14 App Router project scaffolding
+- [x] **INFRA-02**: Tailwind CSS configured with custom design tokens
+- [x] **INFRA-03**: anime.js + Framer Motion animation libraries integrated
 - [ ] **INFRA-04**: Responsive design with manga panel grid collapse on mobile
 - [ ] **INFRA-05**: Deployment on Vercel with production configuration
 
