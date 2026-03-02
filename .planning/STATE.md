@@ -29,6 +29,8 @@ Next action: Phase 1 complete — begin Phase 2 (Core Sections: Hero + About)
 - **animejs v4 (01-01):** npm installs v4.3.6 as latest stable. v4 has different API from v3; @types/animejs@3 remains compatible.
 - **CSS var() bridging for Tailwind colors (01-02):** All Tailwind color tokens use `'var(--color-*)'` pattern so runtime CSS custom properties drive theme values without Tailwind recompile.
 - **Font token chaining (01-02):** --font-manga and --font-mono chain through next/font CSS vars (--font-bangers/--font-jetbrains-mono) set in layout.tsx.
+- **Overlay inline styles over Tailwind (01-03):** HalftoneOverlay and CRTOverlay use inline styles for position/backgroundImage/zIndex to avoid timing dependency on 01-02 design tokens not yet compiled when running in parallel.
+- **CRTOverlay two-div pattern (01-03):** Scanlines (z-11) and vignette (z-12) are separate divs for independent opacity/blend control rather than a single combined element.
 
 ## Milestone Progress
 
@@ -46,7 +48,7 @@ Next action: Phase 1 complete — begin Phase 2 (Core Sections: Hero + About)
 - 2026-03-02: Phase 1 planned — 3 PLAN.md files created and verified by plan-checker
 - 2026-03-02: 01-01 complete — Next.js 14 scaffold, animejs, framer-motion, Google Fonts (Bangers + JetBrains Mono), branch phase/01-foundation. Duration: 4 min.
 - 2026-03-02: 01-02 complete — CSS custom properties, Tailwind design tokens, base styles, animations. Duration: 5 min.
-- 2026-03-02: 01-03 complete — MangaPanel, HalftoneOverlay, CRTOverlay, PageLayout visual components.
+- 2026-03-02: 01-03 complete — MangaPanel, HalftoneOverlay, CRTOverlay, PageLayout visual components. Duration: 6 min.
 
 ---
 *Last updated: 2026-03-02*

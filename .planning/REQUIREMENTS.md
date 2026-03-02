@@ -55,9 +55,9 @@
 - [x] **DS-01**: Dark background base (#0d0d0d) with terminal green (#00ff41) + manga red (#ff2d55) accents
 - [x] **DS-02**: CSS custom properties for all design tokens (colors, fonts, spacing)
 - [x] **DS-03**: Bangers font for display headings, JetBrains Mono for code/body text
-- [ ] **DS-04**: Manga panel grid layout system with asymmetric ink borders
-- [ ] **DS-05**: Halftone dot pattern texture overlays
-- [ ] **DS-06**: CRT scanline overlay effect on entire site
+- [x] **DS-04**: Manga panel grid layout system with asymmetric ink borders
+- [x] **DS-05**: Halftone dot pattern texture overlays
+- [x] **DS-06**: CRT scanline overlay effect on entire site
 
 ### Animation System
 
@@ -117,9 +117,9 @@
 | DS-01 | Phase 1 | Complete |
 | DS-02 | Phase 1 | Complete |
 | DS-03 | Phase 1 | Pending |
-| DS-04 | Phase 1 | Pending |
-| DS-05 | Phase 1 | Pending |
-| DS-06 | Phase 1 | Pending |
+| DS-04 | Phase 1 | Complete |
+| DS-05 | Phase 1 | Complete |
+| DS-06 | Phase 1 | Complete |
 | HERO-01 | Phase 2 | Pending |
 | HERO-02 | Phase 2 | Pending |
 | HERO-03 | Phase 2 | Pending |
