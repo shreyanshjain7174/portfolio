@@ -12,15 +12,12 @@
 
 **Requirements:** INFRA-01, INFRA-02, INFRA-03, DS-01, DS-02, DS-03, DS-04, DS-05, DS-06
 
-**Tasks:**
-1. Scaffold Next.js 14 App Router project with TypeScript
-2. Configure Tailwind CSS with custom design tokens (colors, fonts, spacing)
-3. Install and configure anime.js + Framer Motion
-4. Load Bangers + JetBrains Mono fonts
-5. Build manga panel grid layout system with asymmetric ink borders
-6. Implement halftone dot pattern texture overlay component
-7. Implement CRT scanline overlay effect
-8. Create base page layout with responsive structure
+**Plans:** 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Next.js 14 scaffold: App Router, TypeScript, Tailwind, anime.js, Framer Motion, Google Fonts
+- [ ] 01-02-PLAN.md — Design tokens: Tailwind config + CSS custom properties (colors, fonts, effects)
+- [ ] 01-03-PLAN.md — Visual components: MangaPanel grid, HalftoneOverlay, CRTOverlay, PageLayout
 
 **Success Criteria:**
 - `npm run dev` serves a styled page with design tokens applied
