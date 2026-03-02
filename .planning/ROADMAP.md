@@ -16,8 +16,8 @@
 
 Plans:
 - [x] 01-01-PLAN.md — Next.js 14 scaffold: App Router, TypeScript, Tailwind, anime.js, Framer Motion, Google Fonts (DONE 2026-03-02)
-- [ ] 01-02-PLAN.md — Design tokens: Tailwind config + CSS custom properties (colors, fonts, effects)
-- [ ] 01-03-PLAN.md — Visual components: MangaPanel grid, HalftoneOverlay, CRTOverlay, PageLayout
+- [x] 01-02-PLAN.md — Design tokens: Tailwind config + CSS custom properties (colors, fonts, effects) (DONE 2026-03-02)
+- [x] 01-03-PLAN.md — Visual components: MangaPanel grid, HalftoneOverlay, CRTOverlay, PageLayout (DONE 2026-03-02)
 
 **Success Criteria:**
 - `npm run dev` serves a styled page with design tokens applied
@@ -154,4 +154,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-03-02*
-*Last updated: 2026-03-02 — 01-01 complete (scaffold)*
+*Last updated: 2026-03-02 — Phase 1 complete (scaffold, design tokens, visual components)*

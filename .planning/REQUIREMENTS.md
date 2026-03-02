@@ -52,8 +52,8 @@
 
 ### Design System
 
-- [ ] **DS-01**: Dark background base (#0d0d0d) with terminal green (#00ff41) + manga red (#ff2d55) accents
-- [ ] **DS-02**: CSS custom properties for all design tokens (colors, fonts, spacing)
+- [x] **DS-01**: Dark background base (#0d0d0d) with terminal green (#00ff41) + manga red (#ff2d55) accents
+- [x] **DS-02**: CSS custom properties for all design tokens (colors, fonts, spacing)
 - [x] **DS-03**: Bangers font for display headings, JetBrains Mono for code/body text
 - [ ] **DS-04**: Manga panel grid layout system with asymmetric ink borders
 - [ ] **DS-05**: Halftone dot pattern texture overlays
@@ -114,8 +114,8 @@
 | INFRA-01 | Phase 1 | Pending |
 | INFRA-02 | Phase 1 | Pending |
 | INFRA-03 | Phase 1 | Pending |
-| DS-01 | Phase 1 | Pending |
-| DS-02 | Phase 1 | Pending |
+| DS-01 | Phase 1 | Complete |
+| DS-02 | Phase 1 | Complete |
 | DS-03 | Phase 1 | Pending |
 | DS-04 | Phase 1 | Pending |
 | DS-05 | Phase 1 | Pending |
