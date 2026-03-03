@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Bangers, JetBrains_Mono, Poppins } from 'next/font/google'
+import { LenisProvider } from '@/components/LenisProvider'
 import './globals.css'
 
 const bangers = Bangers({
@@ -23,19 +24,18 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Shreyansh Sancheti — Software Engineer',
-  description: 'Software Engineer specializing in Distributed Systems, Infrastructure & Open Source. Building at Arista Networks & xBattery.',
+  title: 'Sunny Gade — Infrastructure Engineer',
+  description: 'Software Engineer specializing in Distributed Systems, Infrastructure & Open Source.',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bangers.variable} ${poppins.variable} ${jetbrainsMono.variable}`}>
+    <html
+      lang="en"
+      className={`${bangers.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
+    >
       <body style={{ margin: 0, padding: 0 }}>
-        {children}
+        <LenisProvider>{children}</LenisProvider>
       </body>
     </html>
   )
