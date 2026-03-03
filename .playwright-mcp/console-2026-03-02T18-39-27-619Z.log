@@ -1,0 +1,2 @@
+[    1066ms] [WARNING] Note: Some companies are required to obtain a license to use Remotion. See: https://remotion.dev/license
+Pass the `acknowledgeRemotionLicense` prop to `<Player />` function to make this message disappear. @ webpack-internal:///(app-pages-browser)/./node_modules/remotion/dist/esm/index.mjs:963
