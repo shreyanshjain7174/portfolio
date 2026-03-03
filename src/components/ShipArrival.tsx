@@ -37,6 +37,7 @@ export function ShipArrival() {
 
       // Label fades in after ship arrives
       if (labelRef.current) {
+        gsap.set(labelRef.current, { opacity: 0 })
         gsap.fromTo(
           labelRef.current,
           { opacity: 0, y: 20 },
@@ -81,7 +82,7 @@ export function ShipArrival() {
       </div>
 
       {/* Ship name label */}
-      <div ref={labelRef} className="mt-8 text-center" style={{ opacity: 0 }}>
+      <div ref={labelRef} className="mt-8 text-center">
         <div
           className="font-display text-2xl md:text-3xl tracking-[0.2em]"
           style={{ color: 'var(--color-sand)', textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}

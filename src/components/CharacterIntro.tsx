@@ -26,6 +26,8 @@ export function CharacterIntro() {
     () => {
       if (!sectionRef.current || !charRef.current || !panelRef.current) return
 
+      gsap.set([charRef.current, panelRef.current], { opacity: 0 })
+
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -64,7 +66,7 @@ export function CharacterIntro() {
 
       <div className="relative w-full max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
         {/* Character image — slides from left */}
-        <div ref={charRef} className="flex justify-center md:justify-end" style={{ opacity: 0 }}>
+        <div ref={charRef} className="flex justify-center md:justify-end">
           <Image
             src="/assets/character-v2.png"
             alt="Sunny Gade — Pirate King of Infrastructure"
@@ -85,7 +87,6 @@ export function CharacterIntro() {
             background: 'rgba(255, 248, 231, 0.96)',
             border: '3px solid var(--color-luffy-red)',
             boxShadow: '8px 8px 0 rgba(0,0,0,0.15)',
-            opacity: 0,
           }}
         >
           {/* Header */}

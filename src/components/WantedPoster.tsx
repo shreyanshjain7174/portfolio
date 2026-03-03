@@ -127,6 +127,7 @@ export function WantedPoster({ title, description, tags, stat, link }: WantedPos
             href={link}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={`View bounty details for ${title}`}
             className="block text-center py-3 font-mono text-xs tracking-[0.2em] uppercase
               transition-all duration-300"
             style={{

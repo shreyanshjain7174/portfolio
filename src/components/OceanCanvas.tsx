@@ -54,9 +54,19 @@ export function OceanCanvas() {
 
     draw()
 
+    const handleVisibility = () => {
+      if (document.hidden) {
+        cancelAnimationFrame(animId)
+      } else {
+        draw()
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+
     return () => {
       cancelAnimationFrame(animId)
       window.removeEventListener('resize', resize)
+      document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [])
 
