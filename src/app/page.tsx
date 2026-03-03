@@ -8,6 +8,7 @@ import AboutSection from '@/components/AboutSection'
 import SkillsSection from '@/components/SkillsSection'
 import ProjectsSection from '@/components/ProjectsSection'
 import ContactSection from '@/components/ContactSection'
+import RunnerChar from '@/components/RunnerChar'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -36,6 +37,7 @@ export default function Home() {
       />
 
       <PixelNav />
+      <RunnerChar />
 
       <main>
         <HeroSection />
