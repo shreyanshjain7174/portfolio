@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import LenisProvider from '@/components/LenisProvider'
+import { LenisProvider } from '@/components/LenisProvider'
 import ScanlineOverlay from '@/components/ScanlineOverlay'
 import PixelCursor from '@/components/PixelCursor'
 
