@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { WantedPoster } from './WantedPoster'
-import { JollyRoger } from './OnePieceDecorations'
 
 const projects = [
   {
@@ -44,15 +43,10 @@ export function ProjectsSection() {
     <section
       id="projects"
       className="relative py-24 px-6 overflow-hidden"
-      style={{ backgroundColor: 'var(--color-ocean-dark)' }}
+      style={{ background: 'linear-gradient(180deg, #1E90FF 0%, #4A90D9 50%, #87CEEB 100%)' }}
     >
-      {/* Background Jolly Roger watermark */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03]">
-        <JollyRoger size={500} />
-      </div>
-
       <div className="relative max-w-6xl mx-auto">
-        {/* Section heading — bounty board style */}
+        {/* Heading */}
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -60,21 +54,24 @@ export function ProjectsSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="font-mono text-[10px] tracking-[0.4em] uppercase text-luffy-red/60 mb-3">
+          <div
+            className="font-mono text-[10px] tracking-[0.4em] uppercase mb-3"
+            style={{ color: 'rgba(255,248,231,0.7)' }}
+          >
             ── Bounty Board ──
           </div>
           <h2
             className="font-display text-4xl md:text-6xl tracking-wide"
             style={{
               color: 'var(--color-gold)',
-              textShadow: '0 0 30px rgba(255,206,0,0.2), 3px 3px 0 rgba(0,0,0,0.5)',
+              textShadow: '0 0 30px rgba(255,215,0,0.4), 3px 3px 0 rgba(0,0,0,0.2)',
             }}
           >
             PROJECTS
           </h2>
         </motion.div>
 
-        {/* Wanted poster grid */}
+        {/* Poster grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-10">
           {projects.map((project) => (
             <WantedPoster key={project.title} {...project} />
