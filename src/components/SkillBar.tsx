@@ -8,19 +8,24 @@ interface SkillBarProps {
   color?: string
 }
 
-/**
- * SkillBar — Horizontal power bar with animated fill on scroll.
- */
 export function SkillBar({ label, percentage, color = 'var(--color-luffy-red)' }: SkillBarProps) {
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-1">
-        <span className="font-mono text-xs tracking-wider text-white/70 uppercase">
+        <span
+          className="font-mono text-xs tracking-wider uppercase"
+          style={{ color: 'var(--color-text-dark)', opacity: 0.7 }}
+        >
           {label}
         </span>
-        <span className="font-mono text-xs text-white/40">{percentage}%</span>
+        <span className="font-mono text-xs" style={{ color: 'var(--color-text-dark)', opacity: 0.5 }}>
+          {percentage}%
+        </span>
       </div>
-      <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+      <div
+        className="w-full h-2 rounded-full overflow-hidden"
+        style={{ background: 'rgba(26,26,46,0.1)' }}
+      >
         <motion.div
           className="h-full rounded-full"
           style={{ backgroundColor: color }}
