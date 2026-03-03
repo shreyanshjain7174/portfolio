@@ -1,41 +1,31 @@
 import type { Metadata } from 'next'
-import { Bangers, JetBrains_Mono, Poppins } from 'next/font/google'
-import { LenisProvider } from '@/components/LenisProvider'
 import './globals.css'
-
-const bangers = Bangers({
-  weight: '400',
-  subsets: ['latin'],
-  variable: '--font-bangers',
-  display: 'swap',
-})
-
-const poppins = Poppins({
-  weight: ['300', '400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-poppins',
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-})
+import LenisProvider from '@/components/LenisProvider'
+import ScanlineOverlay from '@/components/ScanlineOverlay'
+import PixelCursor from '@/components/PixelCursor'
 
 export const metadata: Metadata = {
-  title: 'Sunny Gade — Infrastructure Engineer',
-  description: 'Software Engineer specializing in Distributed Systems, Infrastructure & Open Source.',
+  title: 'Sunny Gade — Full Stack Developer',
+  description: 'Portfolio of Sunny Gade, full stack developer. Pixel art meets clean code.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${bangers.variable} ${poppins.variable} ${jetbrainsMono.variable}`}
-    >
-      <body style={{ margin: 0, padding: 0 }}>
-        <LenisProvider>{children}</LenisProvider>
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="bg-px-bg">
+        <LenisProvider>
+          <ScanlineOverlay />
+          <PixelCursor />
+          {children}
+        </LenisProvider>
       </body>
     </html>
   )
