@@ -5,7 +5,7 @@ import PixelChar from './PixelChar'
 
 const PixelCanvas = dynamic(() => import('./PixelCanvas'), { ssr: false })
 
-const TITLE = 'SUNNY GADE'
+const TITLE = 'SHREYANSH SANCHETI'
 const SUBTITLE = 'FULL STACK DEVELOPER'
 
 export default function HeroSection() {

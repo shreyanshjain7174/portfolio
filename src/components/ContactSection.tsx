@@ -9,9 +9,9 @@ interface Link {
 }
 
 const LINKS: Link[] = [
-  { label: 'Email',    display: 'sunny@sunnygade.dev',       href: 'mailto:sunny@sunnygade.dev' },
-  { label: 'GitHub',   display: 'github.com/sunnygade',       href: 'https://github.com' },
-  { label: 'LinkedIn', display: 'linkedin.com/in/sunnygade',  href: 'https://linkedin.com' },
+  { label: 'Email',    display: 'shreyansh@sancheti.dev',            href: 'mailto:shreyansh@sancheti.dev' },
+  { label: 'GitHub',   display: 'github.com/007ssancheti',           href: 'https://github.com/007ssancheti' },
+  { label: 'LinkedIn', display: 'linkedin.com/in/shreyanshsancheti', href: 'https://linkedin.com/in/shreyanshsancheti' },
 ]
 
 export default function ContactSection() {
@@ -111,7 +111,7 @@ export default function ContactSection() {
       <footer className="mt-20 text-center">
         <div className="font-pixel text-px-dim" style={{ fontSize: 7 }}>BUILT WITH PIXELS &amp; PASSION</div>
         <div className="font-pixel mt-2" style={{ fontSize: 6, color: 'var(--px-border)' }}>
-          © 2026 SUNNY GADE · ALL RIGHTS RESERVED
+          © 2026 SHREYANSH SANCHETI · ALL RIGHTS RESERVED
         </div>
       </footer>
     </section>

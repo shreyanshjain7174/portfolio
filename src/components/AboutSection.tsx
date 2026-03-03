@@ -84,7 +84,7 @@ export default function AboutSection() {
           <div className="flex justify-center mb-6">
             <div className="p-3" style={{ border: '2px solid var(--px-border)' }}>
               <svg viewBox="0 0 32 32" width="128" height="128" style={{ imageRendering: 'pixelated', display: 'block' }}
-                aria-label="Pixel portrait of Sunny">
+                aria-label="Pixel portrait of Shreyansh">
                 <rect width="32" height="32" fill="#16213E" />
                 <rect x="10" y="4" width="12" height="12" fill="#E8D5C0" />
                 <rect x="10" y="4" width="12" height="3" fill="#2D1B00" />
@@ -102,7 +102,7 @@ export default function AboutSection() {
               </svg>
             </div>
           </div>
-          <div className="text-center font-pixel text-px-cyan mb-4" style={{ fontSize: 8 }}>SUNNY.EXE</div>
+          <div className="text-center font-pixel text-px-cyan mb-4" style={{ fontSize: 8 }}>SHREYANSH.EXE</div>
 
           <div className="space-y-2 font-terminal text-px-text" style={{ fontSize: 20 }}>
             <p><span className="text-px-gold">{'>'}</span> Full Stack Developer</p>

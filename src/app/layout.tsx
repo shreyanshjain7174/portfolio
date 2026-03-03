@@ -5,8 +5,8 @@ import ScanlineOverlay from '@/components/ScanlineOverlay'
 import PixelCursor from '@/components/PixelCursor'
 
 export const metadata: Metadata = {
-  title: 'Sunny Gade — Full Stack Developer',
-  description: 'Portfolio of Sunny Gade, full stack developer. Pixel art meets clean code.',
+  title: 'Shreyansh Sancheti — Full Stack Developer',
+  description: 'Portfolio of Shreyansh Sancheti, full stack developer. Pixel art meets clean code.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
