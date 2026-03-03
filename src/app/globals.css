@@ -3,49 +3,42 @@
 @tailwind utilities;
 
 /* ============================================================
-   DESIGN TOKENS — One Piece "Grand Voyage" palette
+   DESIGN TOKENS — Grand Line Voyage (Bright)
    ============================================================ */
 
 :root {
-  /* Core palette */
-  --color-ocean-deep: #071120;
-  --color-ocean-dark: #0a192f;
+  --color-sky: #87CEEB;
+  --color-sky-deep: #4A90D9;
+  --color-ocean: #1E90FF;
+  --color-ocean-light: #60BFF5;
+  --color-sand: #FFF8E7;
   --color-luffy-red: #D70000;
   --color-luffy-red-dim: rgba(215, 0, 0, 0.35);
-  --color-gold: #FFCE00;
-  --color-gold-dim: rgba(255, 206, 0, 0.3);
-  --color-sky-blue: #60BFF5;
-  --color-sky-blue-dim: rgba(96, 191, 245, 0.3);
-  --color-bronze: #DFC18A;
-  --color-white: #FEFEFE;
-  --color-glass: rgba(15, 30, 50, 0.8);
-  --color-glass-border: rgba(96, 191, 245, 0.15);
+  --color-gold: #FFD700;
+  --color-gold-dim: rgba(255, 215, 0, 0.35);
+  --color-text-dark: #1a1a2e;
 
-  /* Font tokens */
   --font-display: var(--font-bangers), 'Bangers', cursive;
   --font-body: var(--font-poppins), 'Poppins', sans-serif;
   --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', monospace;
 
-  /* Effect tokens */
+  --glow-gold: 0 0 12px var(--color-gold-dim), 0 0 24px rgba(255, 215, 0, 0.15);
   --glow-red: 0 0 12px var(--color-luffy-red-dim), 0 0 24px rgba(215, 0, 0, 0.15);
-  --glow-gold: 0 0 12px var(--color-gold-dim), 0 0 24px rgba(255, 206, 0, 0.15);
-  --glow-blue: 0 0 12px var(--color-sky-blue-dim), 0 0 24px rgba(96, 191, 245, 0.15);
 }
 
 /* ============================================================
-   BASE STYLES
+   BASE
    ============================================================ */
 
 @layer base {
   html {
-    background-color: var(--color-ocean-deep);
-    color: var(--color-white);
+    background: linear-gradient(180deg, #87CEEB 0%, #4A90D9 40%, #1E90FF 100%);
+    background-attachment: fixed;
+    color: var(--color-text-dark);
     font-family: var(--font-body);
-    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--color-ocean-deep);
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -53,175 +46,69 @@
 
   ::selection {
     background-color: var(--color-gold);
-    color: var(--color-ocean-deep);
+    color: var(--color-text-dark);
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: var(--color-ocean-deep);
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: var(--color-luffy-red);
-    border-radius: 3px;
-  }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--color-sky-deep); }
+  ::-webkit-scrollbar-thumb { background: var(--color-luffy-red); border-radius: 3px; }
 }
 
 /* ============================================================
-   UTILITY CLASSES
+   UTILITIES
    ============================================================ */
 
 @layer utilities {
-  .font-display {
-    font-family: var(--font-display);
-  }
-
-  .font-body {
-    font-family: var(--font-body);
-  }
-
-  .font-mono {
-    font-family: var(--font-mono);
-  }
-
-  /* ── Text glow effects ───────────────────────────────────── */
+  .font-display { font-family: var(--font-display); }
+  .font-body    { font-family: var(--font-body); }
+  .font-mono    { font-family: var(--font-mono); }
 
   .text-glow-gold {
-    text-shadow: 0 0 10px var(--color-gold-dim), 0 0 30px rgba(255, 206, 0, 0.15);
+    text-shadow: 0 0 10px var(--color-gold-dim), 0 0 30px rgba(255,215,0,0.15);
   }
 
   .text-glow-red {
-    text-shadow: 0 0 10px var(--color-luffy-red-dim), 0 0 30px rgba(215, 0, 0, 0.15);
+    text-shadow: 0 0 10px var(--color-luffy-red-dim), 0 0 30px rgba(215,0,0,0.15);
   }
-
-  .text-glow-blue {
-    text-shadow: 0 0 10px var(--color-sky-blue-dim), 0 0 30px rgba(96, 191, 245, 0.15);
-  }
-
-  /* ── Glass card ──────────────────────────────────────────── */
-
-  .glass-card {
-    background: var(--color-glass);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--color-glass-border);
-  }
-
-  /* ── Manga text impact ───────────────────────────────────── */
 
   .text-impact {
     font-family: var(--font-display);
     color: var(--color-gold);
-    -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.6);
-    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
+    -webkit-text-stroke: 1.5px rgba(0, 0, 0, 0.4);
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
     letter-spacing: 0.05em;
   }
 
-  /* ── Manga panel border ──────────────────────────────────── */
+  .glass-card {
+    background: rgba(255, 248, 231, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
 
   .manga-panel {
     position: relative;
-    border: 3px solid rgba(215, 0, 0, 0.3);
-    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.5),
-                inset 0 0 40px rgba(0, 0, 0, 0.3),
-                0 0 20px rgba(215, 0, 0, 0.06);
-  }
-
-  .manga-panel::before,
-  .manga-panel::after {
-    content: '';
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    pointer-events: none;
+    border: 3px solid rgba(215, 0, 0, 0.4);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.2), inset 0 0 40px rgba(255,248,231,0.1);
   }
 
   .manga-panel::before {
-    top: -1px;
-    left: -1px;
-    border-top: 4px solid rgba(215, 0, 0, 0.6);
-    border-left: 4px solid rgba(215, 0, 0, 0.6);
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 12px; height: 12px;
+    border-top: 4px solid rgba(215,0,0,0.7);
+    border-left: 4px solid rgba(215,0,0,0.7);
+    pointer-events: none;
   }
 
   .manga-panel::after {
-    bottom: -1px;
-    right: -1px;
-    border-bottom: 4px solid rgba(215, 0, 0, 0.6);
-    border-right: 4px solid rgba(215, 0, 0, 0.6);
-  }
-
-  /* ── Section divider — decorative horizontal rule ────────── */
-
-  .section-divider {
-    position: relative;
-    height: 3px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(215, 0, 0, 0.4) 20%,
-      rgba(255, 206, 0, 0.3) 50%,
-      rgba(215, 0, 0, 0.4) 80%,
-      transparent 100%
-    );
-  }
-
-  .section-divider::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 12px;
-    height: 12px;
-    background: var(--color-luffy-red);
-    border-radius: 50%;
-    box-shadow: 0 0 12px rgba(215, 0, 0, 0.5);
+    bottom: -1px; right: -1px;
+    width: 12px; height: 12px;
+    border-bottom: 4px solid rgba(215,0,0,0.7);
+    border-right: 4px solid rgba(215,0,0,0.7);
+    pointer-events: none;
   }
-
-  /* ── Red accent line (vertical or horizontal) ────────────── */
-
-  .accent-line-h {
-    height: 3px;
-    background: linear-gradient(90deg, var(--color-luffy-red), transparent);
-  }
-
-  .accent-line-v {
-    width: 3px;
-    background: linear-gradient(180deg, var(--color-luffy-red), transparent);
-  }
-}
-
-/* ============================================================
-   SECTION TRANSITION OVERLAYS
-   ============================================================ */
-
-.section-fade-top {
-  position: relative;
-}
-
-.section-fade-top::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(to bottom, var(--color-ocean-deep), transparent);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.section-fade-bottom::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: linear-gradient(to top, var(--color-ocean-deep), transparent);
-  pointer-events: none;
-  z-index: 1;
 }
