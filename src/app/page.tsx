@@ -1,19 +1,15 @@
-import { HeroSection } from '@/components/HeroSection'
-import { AboutSection } from '@/components/AboutSection'
+import { VoyageHero }      from '@/components/VoyageHero'
+import { ShipArrival }     from '@/components/ShipArrival'
+import { CharacterIntro }  from '@/components/CharacterIntro'
 import { ProjectsSection } from '@/components/ProjectsSection'
-import { ContactSection } from '@/components/ContactSection'
-
-function SectionDivider() {
-  return <div className="section-divider" aria-hidden="true" />
-}
+import { ContactSection }  from '@/components/ContactSection'
 
 export default function Home() {
   return (
     <main>
-      <HeroSection />
-      <SectionDivider />
-      <AboutSection />
-      <SectionDivider />
+      <VoyageHero />
+      <ShipArrival />
+      <CharacterIntro />
       <ProjectsSection />
       <ContactSection />
     </main>
