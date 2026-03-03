@@ -5,212 +5,243 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-/* ─── Section quips ──────────────────────────────────────────── */
-const QUIPS: Record<string, string> = {
-  hero:     'READY PLAYER ONE!',
-  about:    'LOADING STATS...',
-  skills:   'CHECKING INVENTORY...',
-  projects: 'REVIEWING QUESTS...',
-  contact:  'SAVE POINT FOUND!',
+/* ─── Section info cards ─────────────────────────────────────── */
+const SECTION_INFO: Record<string, { title: string; lines: string[] }> = {
+  about: {
+    title: 'ABOUT LOADED',
+    lines: ['SHREYANSH SANCHETI', 'FULL STACK DEV · LVL 5', 'RANK: S+'],
+  },
+  skills: {
+    title: 'INVENTORY',
+    lines: ['15 SKILLS EQUIPPED', 'TOP: TYPESCRIPT 95/100', 'ALL SLOTS ACTIVE'],
+  },
+  projects: {
+    title: 'QUEST LOG',
+    lines: ['3 QUESTS COMPLETED', '1 LEGENDARY · 1 EPIC', '1 RARE QUEST'],
+  },
+  contact: {
+    title: 'SAVE POINT',
+    lines: ['PROGRESS SAVED!', 'CONNECT: GITHUB · LINKEDIN', 'READY TO COLLAB'],
+  },
 }
 
-/* ─── One frame of the pixel character ─────────────────────────
-   We render 4 walk frames by shifting leg/arm positions via props.
-   frame: 0 = stand, 1 = left step, 2 = stand, 3 = right step
-   ─────────────────────────────────────────────────────────────── */
-function CharFrame({ frame, flip }: { frame: number; flip: boolean }) {
-  // Leg offsets per frame: [leftLegY, rightLegY, leftBootY, rightBootY]
-  const legs: [number, number, number, number][] = [
-    [12, 12, 14, 14], // stand
-    [11, 13, 13, 15], // left stride
-    [12, 12, 14, 14], // stand
-    [13, 11, 15, 13], // right stride
+/* ─── Upgraded sprite — 20×26 viewBox ───────────────────────── */
+function RunSprite({ frame, squish, flip }: { frame: number; squish: boolean; flip: boolean }) {
+  const cycle = [
+    { la: 0, ra: 0, ll: 0, rl: 0 },
+    { la:-2, ra: 2, ll:-3, rl: 3 },
+    { la:-1, ra: 1, ll:-1, rl: 1 },
+    { la: 0, ra: 0, ll: 0, rl: 0 },
+    { la: 2, ra:-2, ll: 3, rl:-3 },
+    { la: 1, ra:-1, ll: 1, rl:-1 },
   ]
-  // Arm offsets: [leftArmY, rightArmY]
-  const arms: [number, number][] = [
-    [8, 8],
-    [7, 9],
-    [8, 8],
-    [9, 7],
-  ]
-
-  const [llY, rlY, lbY, rbY] = legs[frame % 4]
-  const [laY, raY] = arms[frame % 4]
+  const f = cycle[frame % 6]
+  const sy = squish ? 1.15 : 1
+  const sx = squish ? 0.88 : 1
 
   return (
     <svg
-      viewBox="0 0 16 18"
-      width="64"
-      height="72"
-      style={{ imageRendering: 'pixelated', display: 'block', transform: flip ? 'scaleX(-1)' : 'none' }}
+      viewBox="0 0 20 28"
+      width="80"
+      height="112"
+      style={{
+        imageRendering: 'pixelated',
+        display: 'block',
+        transform: `scaleX(${flip ? -sx : sx}) scaleY(${sy})`,
+        transformOrigin: 'bottom center',
+        transition: 'transform 0.08s',
+      }}
       aria-hidden="true"
     >
-      {/* Shadow */}
-      <ellipse cx="8" cy="17.5" rx="5" ry="0.7" fill="rgba(0,0,0,0.3)" />
-
-      {/* Helmet/visor surround */}
-      <rect x="5" y="1" width="6" height="1" fill="#7B2FBE" />
-      <rect x="4" y="2" width="1" height="5" fill="#7B2FBE" />
-      <rect x="11" y="2" width="1" height="5" fill="#7B2FBE" />
-      <rect x="5" y="7" width="6" height="1" fill="#7B2FBE" />
-
+      {/* Helmet */}
+      <rect x="6"  y="1"  width="8"  height="1"  fill="#7B2FBE" />
+      <rect x="5"  y="2"  width="1"  height="6"  fill="#7B2FBE" />
+      <rect x="14" y="2"  width="1"  height="6"  fill="#7B2FBE" />
+      <rect x="6"  y="8"  width="8"  height="1"  fill="#7B2FBE" />
       {/* Face */}
-      <rect x="5" y="2" width="6" height="5" fill="#E8D5C0" />
-
-      {/* Eyes — cyan with pupil */}
-      <rect x="6" y="3" width="2" height="2" fill="#00F5FF" />
-      <rect x="9" y="3" width="2" height="2" fill="#00F5FF" />
-      <rect x="6" y="3" width="1" height="1" fill="#004466" />
-      <rect x="9" y="3" width="1" height="1" fill="#004466" />
-
-      {/* Smile */}
-      <rect x="6" y="6" width="4" height="1" fill="#c47a5a" />
-      <rect x="6" y="6" width="1" height="1" fill="transparent" />
-      <rect x="9" y="6" width="1" height="1" fill="transparent" />
-
+      <rect x="6"  y="2"  width="8"  height="6"  fill="#E8D5C0" />
+      {/* Eyes */}
+      <rect x="7"  y="3"  width="2"  height="2"  fill="#00F5FF" />
+      <rect x="11" y="3"  width="2"  height="2"  fill="#00F5FF" />
+      <rect x="7"  y="3"  width="1"  height="1"  fill="#003355" />
+      <rect x="11" y="3"  width="1"  height="1"  fill="#003355" />
+      <rect x="8"  y="3"  width="1"  height="1"  fill="rgba(255,255,255,0.5)" />
+      <rect x="12" y="3"  width="1"  height="1"  fill="rgba(255,255,255,0.5)" />
+      {/* Mouth */}
+      <rect x="8"  y="7"  width="4"  height="1"  fill="#c47a5a" />
+      {/* Neck */}
+      <rect x="8"  y="9"  width="4"  height="1"  fill="#E8D5C0" />
       {/* Body */}
-      <rect x="4" y="8" width="8" height="4" fill="#7B2FBE" />
-      {/* Chest code badge */}
-      <rect x="6" y="9" width="4" height="1" fill="#00F5FF" />
-      <rect x="6" y="10" width="2" height="1" fill="#FFD700" />
-      <rect x="9" y="10" width="1" height="1" fill="#FFD700" />
-
+      <rect x="5"  y="10" width="10" height="6"  fill="#7B2FBE" />
+      <rect x="7"  y="11" width="6"  height="1"  fill="#00F5FF" />
+      <rect x="7"  y="12" width="3"  height="1"  fill="#FFD700" />
+      {/* Belt */}
+      <rect x="5"  y="16" width="10" height="1"  fill="#FFD700" />
       {/* Left arm */}
-      <rect x="2" y={laY} width="2" height="3" fill="#7B2FBE" />
-      <rect x="2" y={laY + 3} width="2" height="1" fill="#E8D5C0" />
-
+      <rect x="2"  y={10 + f.la} width="3" height="4" fill="#7B2FBE" />
+      <rect x="2"  y={14 + f.la} width="3" height="2" fill="#E8D5C0" />
       {/* Right arm */}
-      <rect x="12" y={raY} width="2" height="3" fill="#7B2FBE" />
-      <rect x="12" y={raY + 3} width="2" height="1" fill="#E8D5C0" />
-
+      <rect x="15" y={10 + f.ra} width="3" height="4" fill="#7B2FBE" />
+      <rect x="15" y={14 + f.ra} width="3" height="2" fill="#E8D5C0" />
       {/* Left leg */}
-      <rect x="5" y={llY} width="2" height="3" fill="#1A1A3E" />
-      {/* Left boot */}
-      <rect x="4" y={lbY} width="3" height="1" fill="#7B2FBE" />
-
+      <rect x="6"  y={17 + f.ll} width="3" height="4" fill="#1A1A3E" />
+      <rect x="5"  y={20 + f.ll} width="4" height="2" fill="#7B2FBE" />
       {/* Right leg */}
-      <rect x="9" y={rlY} width="2" height="3" fill="#1A1A3E" />
-      {/* Right boot */}
-      <rect x="9" y={rbY} width="3" height="1" fill="#7B2FBE" />
+      <rect x="11" y={17 + f.rl} width="3" height="4" fill="#1A1A3E" />
+      <rect x="11" y={20 + f.rl} width="4" height="2" fill="#7B2FBE" />
     </svg>
   )
 }
 
-/* ─── Speech bubble ──────────────────────────────────────────── */
-function Bubble({ text, visible }: { text: string; visible: boolean }) {
+/* ─── Dust particles on landing ─────────────────────────────── */
+function DustPuff({ show }: { show: boolean }) {
+  if (!show) return null
   return (
-    <div
-      style={{
-        position: 'absolute',
-        bottom: '100%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        marginBottom: 6,
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 0.25s',
-        pointerEvents: 'none',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {/* Bubble body */}
-      <div
-        className="font-pixel"
-        style={{
-          fontSize: 6,
-          padding: '5px 8px',
-          background: 'var(--px-surface)',
-          border: '2px solid var(--px-cyan)',
-          color: 'var(--px-cyan)',
-          boxShadow: '0 0 8px var(--px-cyan-dim)',
-          lineHeight: 1.4,
-        }}
-      >
-        {text}
-      </div>
-      {/* Tail */}
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <div style={{
-          width: 0, height: 0,
-          borderLeft: '4px solid transparent',
-          borderRight: '4px solid transparent',
-          borderTop: '5px solid var(--px-cyan)',
+    <div style={{ position: 'absolute', bottom: 4, left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
+      {[-16, -8, 8, 16].map((x, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          width: 4, height: 4,
+          background: 'var(--px-purple-dim)',
+          bottom: 0,
+          left: x,
+          animation: `dustPuff 0.4s ${i * 0.04}s ease-out forwards`,
         }} />
+      ))}
+      <style>{`
+        @keyframes dustPuff {
+          0%   { transform: translateY(0) scale(1); opacity: 0.8; }
+          100% { transform: translateY(-12px) scale(0); opacity: 0; }
+        }
+      `}</style>
+    </div>
+  )
+}
+
+/* ─── Info panel beside the character ───────────────────────── */
+function InfoPanel({ data, show, flip }: { data: { title: string; lines: string[] } | null; show: boolean; flip: boolean }) {
+  if (!data) return null
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: '100%',
+      [flip ? 'right' : 'left']: 0,
+      marginBottom: 10,
+      opacity: show ? 1 : 0,
+      transform: show ? 'translateY(0)' : 'translateY(8px)',
+      transition: 'opacity 0.25s, transform 0.25s',
+      pointerEvents: 'none',
+      minWidth: 160,
+    }}>
+      <div className="pixel-border-cyan" style={{ background: 'rgba(13,13,26,0.95)', padding: '8px 12px' }}>
+        <div className="font-pixel text-px-gold" style={{ fontSize: 7, marginBottom: 4 }}>
+          ◆ {data.title}
+        </div>
+        {data.lines.map((line, i) => (
+          <div key={i} className="font-terminal text-px-text" style={{ fontSize: 16, lineHeight: 1.3 }}>
+            <span className="text-px-cyan">{'> '}</span>{line}
+          </div>
+        ))}
+      </div>
+      {/* Arrow pointing down to character */}
+      <div style={{ display: 'flex', justifyContent: flip ? 'flex-end' : 'flex-start', paddingLeft: flip ? 0 : 16, paddingRight: flip ? 16 : 0 }}>
+        <div style={{ width: 0, height: 0, borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: '5px solid var(--px-cyan)' }} />
       </div>
     </div>
   )
 }
 
-/* ─── Main runner ────────────────────────────────────────────── */
+/* ─── Main component ─────────────────────────────────────────── */
 export default function RunnerChar() {
-  const wrapRef   = useRef<HTMLDivElement>(null)
-  const charRef   = useRef<HTMLDivElement>(null)
-  const [frame, setFrame]   = useState(0)
-  const [flip, setFlip]     = useState(false)
-  const [airborne, setAirborne] = useState(false)
-  const [quip, setQuip]     = useState('')
-  const [showQuip, setShowQuip] = useState(false)
-  const [visible, setVisible]   = useState(false)
+  const wrapRef  = useRef<HTMLDivElement>(null)
+  const charRef  = useRef<HTMLDivElement>(null)
+  const [frame, setFrame]     = useState(0)
+  const [flip, setFlip]       = useState(false)
+  const [squish, setSquish]   = useState(false)
+  const [dust, setDust]       = useState(false)
+  const [visible, setVisible] = useState(false)
+  const [info, setInfo]       = useState<{ title: string; lines: string[] } | null>(null)
+  const [showInfo, setShowInfo] = useState(false)
+  const current = useRef('')
+  const animating = useRef(false)
 
   /* Walk-cycle ticker */
   useEffect(() => {
-    const id = setInterval(() => {
-      if (!airborne) setFrame(f => (f + 1) % 4)
-    }, 120)
+    const id = setInterval(() => setFrame(f => (f + 1) % 6), 100)
     return () => clearInterval(id)
-  }, [airborne])
+  }, [])
 
-  /* GSAP: drive x position based on scroll, trigger jump on section change */
+  /* Section runner logic */
   useEffect(() => {
-    const wrap = wrapRef.current
-    const char = charRef.current
-    if (!wrap || !char) return
-
     const SECTIONS = ['hero', 'about', 'skills', 'projects', 'contact']
-    let currentSection = ''
 
-    const showSection = (id: string) => {
-      if (id === currentSection) return
-      currentSection = id
+    const enter = (id: string) => {
+      if (id === current.current || animating.current) return
+      current.current = id
+      if (id === 'hero') return
 
-      // Show runner when leaving hero
-      if (id !== 'hero') setVisible(true)
+      setVisible(true)
+      animating.current = true
+      setShowInfo(false)
 
-      // Jump + new quip
-      setFlip(false)
-      setAirborne(true)
-      setShowQuip(false)
+      const vw = window.innerWidth
+      const wrap = wrapRef.current
+      const char = charRef.current
+      if (!wrap || !char) return
 
-      gsap.fromTo(char,
-        { y: 0 },
+      // Direction — alternate left/right for variety
+      const fromLeft = SECTIONS.indexOf(id) % 2 === 1
+      setFlip(!fromLeft)
+
+      const startX = fromLeft ? -100 : vw + 100
+      const endX   = fromLeft ? vw * 0.45 : vw * 0.55 - 80
+
+      const tl = gsap.timeline({
+        onComplete: () => { animating.current = false }
+      })
+
+      // Run in
+      tl.fromTo(wrap,
+        { x: startX },
         {
-          y: -48,
-          duration: 0.3,
+          x: endX,
+          duration: 1.4,
           ease: 'power2.out',
-          yoyo: true,
-          repeat: 1,
-          onComplete: () => {
-            setAirborne(false)
-            setQuip(QUIPS[id] ?? '')
-            setShowQuip(true)
-            // Hide quip after 2.5 s
-            setTimeout(() => setShowQuip(false), 2500)
-          },
+          onStart: () => { setFlip(!fromLeft) },
         }
       )
-
-      // Run across screen
-      const vw = window.innerWidth
-      gsap.fromTo(wrap,
-        { x: -80 },
-        { x: vw + 20, duration: 3.5, ease: 'none',
-          onStart: () => setFlip(false),
+      // Jump
+      .to(char,
+        { y: -52, duration: 0.28, ease: 'power2.out' },
+        '-=0.4'
+      )
+      .to(char,
+        {
+          y: 0,
+          duration: 0.22,
+          ease: 'bounce.out',
           onComplete: () => {
-            // bounce back from right
-            setFlip(true)
-            gsap.fromTo(wrap,
-              { x: vw + 20 },
-              { x: vw * 0.5 - 32, duration: 1.2, ease: 'power2.out' }
-            )
+            // Land squish + dust
+            setSquish(true)
+            setDust(true)
+            setTimeout(() => { setSquish(false); setDust(false) }, 300)
+
+            // Show info panel
+            const sectionInfo = SECTION_INFO[id]
+            if (sectionInfo) {
+              setInfo(sectionInfo)
+              setShowInfo(true)
+              setFlip(fromLeft) // face inward
+              setTimeout(() => {
+                setShowInfo(false)
+                // Run off after showing info
+                setTimeout(() => {
+                  const exitX = fromLeft ? vw + 100 : -100
+                  setFlip(fromLeft)
+                  gsap.to(wrap, { x: exitX, duration: 0.9, ease: 'power2.in' })
+                }, 200)
+              }, 2400)
+            }
           },
         }
       )
@@ -219,9 +250,9 @@ export default function RunnerChar() {
     SECTIONS.forEach(id => {
       ScrollTrigger.create({
         trigger: `#${id}`,
-        start: 'top 60%',
-        onEnter: () => showSection(id),
-        onEnterBack: () => showSection(id),
+        start: 'top 55%',
+        onEnter:     () => enter(id),
+        onEnterBack: () => enter(id),
       })
     })
 
@@ -235,16 +266,17 @@ export default function RunnerChar() {
       ref={wrapRef}
       style={{
         position: 'fixed',
-        bottom: 20,
+        bottom: 16,
         left: 0,
         zIndex: 500,
         pointerEvents: 'none',
-        width: 64,
+        width: 80,
       }}
     >
       <div ref={charRef} style={{ position: 'relative' }}>
-        <Bubble text={quip} visible={showQuip} />
-        <CharFrame frame={frame} flip={flip} />
+        <InfoPanel data={info} show={showInfo} flip={flip} />
+        <DustPuff show={dust} />
+        <RunSprite frame={frame} squish={squish} flip={flip} />
       </div>
     </div>
   )
