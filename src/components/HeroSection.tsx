@@ -18,28 +18,28 @@ export default function HeroSection() {
     let destroyed = false
 
     const run = async () => {
-      const anime = (await import('animejs')).default
+      const { animate, stagger } = await import('animejs')
       if (destroyed) return
 
       // Letters stagger in
-      anime({
-        targets: lettersRef.current.filter(Boolean),
+      animate(lettersRef.current.filter(Boolean), {
         translateY: [32, 0],
         opacity: [0, 1],
         duration: 500,
-        delay: anime.stagger(50, { start: 600 }),
-        easing: 'easeOutExpo',
+        delay: stagger(50, { start: 600 }),
+        ease: 'easeOutExpo',
       })
 
       // Character slides up
-      anime({
-        targets: charRef.current,
-        translateY: [48, 0],
-        opacity: [0, 1],
-        duration: 900,
-        delay: 900,
-        easing: 'easeOutBack',
-      })
+      if (charRef.current) {
+        animate(charRef.current, {
+          translateY: [48, 0],
+          opacity: [0, 1],
+          duration: 900,
+          delay: 900,
+          ease: 'easeOutBack',
+        })
+      }
 
       // Typewriter subtitle
       const subEl = subtitleRef.current
@@ -56,13 +56,14 @@ export default function HeroSection() {
             } else {
               clearInterval(id)
               // CTA fades in after typing done
-              anime({
-                targets: ctaRef.current,
-                opacity: [0, 1],
-                translateY: [16, 0],
-                duration: 600,
-                easing: 'easeOutQuad',
-              })
+              if (ctaRef.current) {
+                animate(ctaRef.current, {
+                  opacity: [0, 1],
+                  translateY: [16, 0],
+                  duration: 600,
+                  ease: 'easeOutQuad',
+                })
+              }
             }
           }, 70)
         }, delay)
