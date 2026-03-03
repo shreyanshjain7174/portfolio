@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { WaveDivider } from './WaveDivider'
-import { Anchor } from './OnePieceDecorations'
 
 const contactLinks = [
   {
@@ -46,10 +45,7 @@ const contactLinks = [
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.12 } },
 }
 
 const itemVariants = {
@@ -60,18 +56,12 @@ const itemVariants = {
 export function ContactSection() {
   return (
     <section id="contact" className="relative">
-      {/* Wave divider at top */}
       <WaveDivider />
 
       <div
         className="relative py-24 px-6 overflow-hidden"
-        style={{ backgroundColor: 'var(--color-ocean-deep)' }}
+        style={{ backgroundColor: 'var(--color-sand)' }}
       >
-        {/* Decorative anchor */}
-        <div className="absolute bottom-12 right-12 pointer-events-none opacity-[0.06] hidden md:block">
-          <Anchor size={200} />
-        </div>
-
         <div className="max-w-4xl mx-auto text-center">
           {/* Heading */}
           <motion.div
@@ -80,22 +70,26 @@ export function ContactSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="font-mono text-[10px] tracking-[0.4em] uppercase text-luffy-red/60 mb-3">
+            <div
+              className="font-mono text-[10px] tracking-[0.4em] uppercase mb-3"
+              style={{ color: 'rgba(215,0,0,0.6)' }}
+            >
               ── Den Den Mushi ──
             </div>
             <h2
               className="font-display text-4xl md:text-5xl tracking-wide mb-4"
               style={{
-                color: 'var(--color-gold)',
-                textShadow: '0 0 30px rgba(255,206,0,0.2), 3px 3px 0 rgba(0,0,0,0.5)',
+                color: 'var(--color-text-dark)',
+                textShadow: '2px 2px 0 rgba(0,0,0,0.1)',
               }}
             >
-              GET IN TOUCH
+              CONTACT THE CREW
             </h2>
           </motion.div>
 
           <motion.p
-            className="font-body text-white/50 mb-12 max-w-lg mx-auto"
+            className="font-body mb-12 max-w-lg mx-auto"
+            style={{ color: 'rgba(26,26,46,0.55)' }}
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -119,41 +113,39 @@ export function ContactSection() {
                 target={link.href.startsWith('mailto') ? undefined : '_blank'}
                 rel="noopener noreferrer"
                 variants={itemVariants}
-                className="relative rounded-sm p-6 flex flex-col items-center gap-3
-                  text-white/60 hover:text-white
-                  transition-all duration-300 cursor-pointer group"
+                className="relative rounded-sm p-6 flex flex-col items-center gap-3 cursor-pointer"
                 style={{
-                  background: 'rgba(15,30,50,0.6)',
-                  border: '2px solid rgba(96,191,245,0.1)',
+                  background: 'rgba(255, 255, 255, 0.5)',
+                  border: '2px solid rgba(30,144,255,0.2)',
+                  backdropFilter: 'blur(8px)',
+                  color: 'var(--color-text-dark)',
                 }}
                 whileHover={{
-                  borderColor: 'rgba(215,0,0,0.4)',
-                  boxShadow: '0 0 20px rgba(215,0,0,0.15), 4px 4px 0 rgba(0,0,0,0.4)',
                   y: -4,
+                  borderColor: 'rgba(215,0,0,0.4)',
+                  boxShadow: '0 0 20px rgba(215,0,0,0.15), 4px 4px 0 rgba(0,0,0,0.08)',
                 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="group-hover:scale-110 transition-transform duration-300">
-                  {link.icon}
-                </div>
-                <span className="font-mono text-xs tracking-wider uppercase">
-                  {link.label}
-                </span>
+                {link.icon}
+                <span className="font-mono text-xs tracking-wider uppercase">{link.label}</span>
               </motion.a>
             ))}
           </motion.div>
 
           {/* Footer */}
           <motion.div
-            className="mt-20 pt-8 border-t border-white/5"
+            className="mt-20 pt-8"
+            style={{ borderTop: '1px solid rgba(26,26,46,0.08)' }}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.5 }}
           >
-            <p className="font-mono text-xs text-white/20 tracking-wider">
-              Built with Next.js, Framer Motion & Remotion
+            <p className="font-mono text-xs tracking-wider" style={{ color: 'rgba(26,26,46,0.3)' }}>
+              Built with Next.js, GSAP & Framer Motion
             </p>
-            <p className="font-mono text-[10px] text-white/10 tracking-wider mt-1">
+            <p className="font-mono text-[10px] tracking-wider mt-1" style={{ color: 'rgba(26,26,46,0.2)' }}>
               &copy; {new Date().getFullYear()} Shreyansh Sancheti
             </p>
           </motion.div>
