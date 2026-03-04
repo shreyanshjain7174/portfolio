@@ -1,240 +1,255 @@
 'use client'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-
-type Rank = 'LEGENDARY' | 'EPIC' | 'RARE'
+import SectionHeading from './SectionHeading'
 
 interface Project {
   id: number
   title: string
-  rank: Rank
-  stars: number
-  objective: string
-  stack: string[]
   description: string
-  link?: string
-  github?: string
+  longDesc: string
+  stack: string[]
+  github: string
+  featured: boolean
+  color: string
+  category: string
 }
 
 const PROJECTS: Project[] = [
   {
     id: 1,
-    title: 'PROJECT ALPHA',
-    rank: 'LEGENDARY',
-    stars: 5,
-    objective: 'Full-stack SaaS platform with real-time collaboration',
-    stack: ['Next.js', 'TypeScript', 'PostgreSQL', 'WebSockets'],
-    description: 'Built from scratch — auth, billing, real-time sync. Scales to 10 k+ concurrent users with edge caching and optimistic UI.',
-    github: '#',
-    link: '#',
+    title: 'Ceph Storage Platform',
+    description: 'Distributed object, block, and file storage platform. Contributed to core storage engine and RGW (RADOS Gateway) components.',
+    longDesc: 'Contributed to the Ceph open-source distributed storage platform, working on core storage engine optimizations, RADOS Gateway improvements, and performance testing infrastructure. Developed benchmarking tools and automated testing pipelines for large-scale storage clusters.',
+    stack: ['C++', 'Python', 'RADOS', 'S3 API', 'Distributed Systems'],
+    github: 'https://github.com/shreyanshjain7174/ceph',
+    featured: true,
+    color: '#f43f5e',
+    category: 'Open Source',
   },
   {
     id: 2,
-    title: 'PROJECT BETA',
-    rank: 'EPIC',
-    stars: 4,
-    objective: 'High-performance REST API serving 1 M+ requests / day',
-    stack: ['Node.js', 'Go', 'Redis', 'Docker'],
-    description: 'Microservices architecture with circuit breakers, distributed tracing, and zero-downtime deploys via Kubernetes rolling updates.',
-    github: '#',
-    link: '#',
+    title: 'Infra Scheduler',
+    description: 'Infrastructure scheduling system built in Go for automated resource management and workload distribution.',
+    longDesc: 'Built a Go-based infrastructure scheduler for automated workload distribution and resource management across cloud environments. Implements intelligent scheduling algorithms for optimal resource utilization.',
+    stack: ['Go', 'Docker', 'Kubernetes', 'REST API'],
+    github: 'https://github.com/shreyanshjain7174/Infra-scheduler',
+    featured: true,
+    color: '#3b82f6',
+    category: 'Infrastructure',
   },
   {
     id: 3,
-    title: 'PROJECT GAMMA',
-    rank: 'RARE',
-    stars: 4,
-    objective: 'Open-source dev tool — 2 k+ GitHub stars',
-    stack: ['React', 'Electron', 'TypeScript'],
-    description: 'Cross-platform desktop app for API testing. Plugin system, live theme engine, and a keyboard-first UX that cuts testing time in half.',
-    github: '#',
-    link: '#',
+    title: 'Stocky — Stock Rewards API',
+    description: 'Users earn shares of Indian stocks as incentives. Full rewards API with real-time stock data integration.',
+    longDesc: 'Stock Rewards API platform where users earn shares of Indian stocks as incentives. Built with Go, featuring real-time stock data integration, rewards tracking, and portfolio management capabilities.',
+    stack: ['Go', 'REST API', 'PostgreSQL', 'Stock Data API'],
+    github: 'https://github.com/shreyanshjain7174/stocky',
+    featured: true,
+    color: '#f59e0b',
+    category: 'Fintech',
+  },
+  {
+    id: 4,
+    title: 'OpenTelemetry Metrics Demo',
+    description: 'Go application demonstrating OpenTelemetry metrics (Counter, Histogram, Gauge) with SigNoz Cloud observability.',
+    longDesc: 'Demonstrates production-grade observability patterns using OpenTelemetry in Go. Covers Counter, Histogram, and Gauge metric types with SigNoz Cloud integration for monitoring and alerting.',
+    stack: ['Go', 'OpenTelemetry', 'SigNoz', 'Prometheus'],
+    github: 'https://github.com/shreyanshjain7174/otel-metrics-demo',
+    featured: false,
+    color: '#06b6d4',
+    category: 'Observability',
+  },
+  {
+    id: 5,
+    title: 'RGWtest Warp',
+    description: 'S3 benchmarking automation for RADOS Gateway. Automated performance testing and reporting pipeline.',
+    longDesc: 'Warp automation suite for S3 benchmarking in RADOS Gateway environments. Automates performance testing, generates comprehensive reports, and enables CI-driven benchmark comparisons across storage configurations.',
+    stack: ['Shell', 'Go', 'S3', 'Warp', 'CI/CD'],
+    github: 'https://github.com/shreyanshjain7174/RGWtest-warp',
+    featured: false,
+    color: '#8b5cf6',
+    category: 'Testing',
+  },
+  {
+    id: 6,
+    title: 'Specwright',
+    description: 'System of Reasoning for Product Managers — AI-powered specification analysis and decision support platform.',
+    longDesc: 'Specwright is an AI-powered reasoning system for Product Managers. Analyzes product specifications, surfaces decision points, and provides structured reasoning frameworks for product decisions.',
+    stack: ['Next.js', 'TypeScript', 'Neon PostgreSQL', 'AI/ML'],
+    github: 'https://github.com/shreyanshjain7174/specwright',
+    featured: false,
+    color: '#10b981',
+    category: 'AI/ML',
   },
 ]
 
-const RANK_COLOR: Record<Rank, string> = {
-  LEGENDARY: 'var(--px-gold)',
-  EPIC:      'var(--px-purple)',
-  RARE:      '#4FC3F7',
-}
-
-function StarRow({ count, total = 5 }: { count: number; total?: number }) {
-  return (
-    <span className="font-pixel" style={{ fontSize: 9 }}>
-      {Array.from({ length: total }, (_, i) => (
-        <span key={i} style={{ color: i < count ? 'var(--px-gold)' : 'var(--px-border)' }}>★</span>
-      ))}
-    </span>
-  )
-}
-
 export default function ProjectsSection() {
-  const [active, setActive] = useState<Project | null>(null)
+  const [expanded, setExpanded] = useState<number | null>(null)
 
   return (
     <section
       id="projects"
-      className="relative min-h-screen flex flex-col justify-center px-4 py-24"
-      style={{ background: 'var(--px-surface)' }}
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      style={{ background: 'var(--bg-secondary)' }}
     >
-      {/* Section label */}
-      <div className="max-w-4xl mx-auto w-full mb-12">
-        <div className="flex items-center gap-4">
-          <span className="font-pixel text-px-cyan" style={{ fontSize: 8 }}>04.</span>
-          <h2 className="font-pixel text-px-gold text-glow-gold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)' }}>
-            QUEST LOG
-          </h2>
-          <div className="flex-1 h-px" style={{ background: 'var(--px-border)' }} />
-          <span className="font-pixel text-px-dim" style={{ fontSize: 7 }}>{PROJECTS.length} COMPLETED</span>
-        </div>
-      </div>
+      <div className="mesh-gradient" aria-hidden="true" />
 
-      {/* Quest cards */}
-      <div className="max-w-4xl mx-auto w-full flex flex-col gap-4">
-        {PROJECTS.map((p, i) => (
-          <motion.article
-            key={p.id}
-            initial={{ x: 80, opacity: 0 }}
-            whileInView={{ x: 0, opacity: 1 }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-            className="pixel-border p-6 group"
-            style={{ background: 'var(--px-bg)' }}
-          >
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                {/* Rank + stars */}
-                <div className="flex flex-wrap items-center gap-3 mb-2">
+      <div className="max-w-6xl mx-auto w-full relative z-10">
+        <SectionHeading
+          number="03"
+          title="Projects"
+          subtitle="Systems and tools I've built — from distributed storage to fintech APIs."
+        />
+
+        {/* Featured projects (larger cards) */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {PROJECTS.filter(p => p.featured).map((p, i) => (
+            <motion.article
+              key={p.id}
+              className="glass-card overflow-hidden group"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-30px' }}
+              transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {/* Color accent bar */}
+              <div className="h-1" style={{ background: `linear-gradient(90deg, ${p.color}, ${p.color}80)` }} />
+
+              <div className="p-6">
+                {/* Category badge */}
+                <div className="flex items-center justify-between mb-4">
                   <span
-                    className="font-pixel px-2 py-1"
-                    style={{ fontSize: 7, color: RANK_COLOR[p.rank], border: `1px solid ${RANK_COLOR[p.rank]}` }}
+                    className="text-xs font-mono px-2.5 py-1 rounded-full"
+                    style={{
+                      background: `${p.color}15`,
+                      color: p.color,
+                      border: `1px solid ${p.color}30`,
+                    }}
                   >
-                    ◆ {p.rank}
+                    {p.category}
                   </span>
-                  <StarRow count={p.stars} />
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium"
+                    style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>
+                    Featured
+                  </span>
                 </div>
+
                 {/* Title */}
-                <h3
-                  className="font-pixel text-px-text group-hover:text-px-cyan transition-colors mb-2"
-                  style={{ fontSize: 'clamp(10px, 1.5vw, 13px)' }}
-                >
+                <h3 className="font-display font-semibold text-lg mb-3 group-hover:text-accent-violet transition-colors" style={{ color: 'var(--text-primary)' }}>
                   {p.title}
                 </h3>
-                {/* Objective */}
-                <p className="font-terminal text-px-dim mb-3" style={{ fontSize: 19 }}>
-                  <span className="text-px-gold">OBJECTIVE:</span> {p.objective}
+
+                {/* Description */}
+                <p className="text-sm leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  {p.description}
                 </p>
-                {/* Stack tags */}
-                <div className="flex flex-wrap gap-2">
+
+                {/* Stack */}
+                <div className="flex flex-wrap gap-1.5 mb-5">
                   {p.stack.map(t => (
                     <span
                       key={t}
-                      className="font-pixel"
-                      style={{
-                        fontSize: 7,
-                        padding: '4px 8px',
-                        background: 'var(--px-surface)',
-                        border: '1px solid var(--px-border)',
-                        color: 'var(--px-cyan)',
-                      }}
+                      className="text-xs font-mono px-2 py-0.5 rounded"
+                      style={{ background: 'rgba(255,255,255,0.04)', color: 'var(--text-muted)' }}
                     >
                       {t}
                     </span>
                   ))}
                 </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex flex-col gap-2 flex-shrink-0">
-                <button
-                  className="px-btn"
-                  style={{ fontSize: 7, padding: '8px 12px' }}
-                  onClick={() => setActive(p)}
-                >
-                  VIEW QUEST
-                </button>
-                {p.github && (
+                {/* Actions */}
+                <div className="flex items-center gap-3">
                   <a
                     href={p.github}
-                    className="px-btn-cyan"
-                    style={{ fontSize: 7, padding: '8px 12px', textAlign: 'center' }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-outline"
+                    style={{ padding: '6px 14px', fontSize: 12 }}
                   >
-                    SOURCE
+                    GitHub →
                   </a>
-                )}
-              </div>
-            </div>
-          </motion.article>
-        ))}
-      </div>
-
-      {/* Detail modal */}
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[2000] flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(6px)' }}
-            onClick={() => setActive(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.75, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.75, opacity: 0 }}
-              transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-              className="pixel-border-cyan p-8 max-w-lg w-full"
-              style={{ background: 'var(--px-bg)', cursor: 'default' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="font-pixel text-px-dim mb-4" style={{ fontSize: 7 }}>╔══ QUEST DETAILS ══╗</div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="font-pixel" style={{ fontSize: 7, color: RANK_COLOR[active.rank] }}>
-                  ◆ {active.rank}
-                </span>
-                <StarRow count={active.stars} />
-              </div>
-              <h3 className="font-pixel text-px-cyan text-glow-cyan mb-4" style={{ fontSize: 'clamp(11px, 2vw, 16px)' }}>
-                {active.title}
-              </h3>
-              <p className="font-terminal text-px-text mb-4" style={{ fontSize: 19, lineHeight: 1.4 }}>
-                {active.description}
-              </p>
-              <div className="flex flex-wrap gap-2 mb-6">
-                {active.stack.map(t => (
-                  <span
-                    key={t}
-                    className="font-pixel"
-                    style={{ fontSize: 7, padding: '4px 8px', background: 'var(--px-surface)', border: '1px solid var(--px-cyan)', color: 'var(--px-cyan)' }}
+                  <button
+                    onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+                    className="text-xs font-medium transition-colors"
+                    style={{ color: 'var(--text-muted)' }}
+                    onMouseEnter={e => (e.target as HTMLElement).style.color = 'var(--accent-violet)'}
+                    onMouseLeave={e => (e.target as HTMLElement).style.color = 'var(--text-muted)'}
                   >
-                    {t}
+                    {expanded === p.id ? 'Less ↑' : 'More ↓'}
+                  </button>
+                </div>
+
+                {/* Expanded details */}
+                <AnimatePresence>
+                  {expanded === p.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-sm leading-relaxed pt-4 mt-4" style={{ color: 'var(--text-secondary)', borderTop: '1px solid var(--border-subtle)' }}>
+                        {p.longDesc}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.article>
+          ))}
+        </div>
+
+        {/* Other projects (smaller, grid) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <h3 className="font-display font-semibold text-lg mb-4" style={{ color: 'var(--text-primary)' }}>
+            Other Projects
+          </h3>
+          <div className="grid md:grid-cols-3 gap-4">
+            {PROJECTS.filter(p => !p.featured).map((p, i) => (
+              <motion.a
+                key={p.id}
+                href={p.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass-card p-5 group"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1, duration: 0.4 }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <span
+                    className="text-xs font-mono px-2 py-0.5 rounded-full"
+                    style={{ background: `${p.color}15`, color: p.color }}
+                  >
+                    {p.category}
                   </span>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-3">
-                {active.link && (
-                  <a href={active.link} className="px-btn" style={{ fontSize: 7, padding: '8px 12px' }}>LIVE DEMO</a>
-                )}
-                {active.github && (
-                  <a href={active.github} className="px-btn-cyan" style={{ fontSize: 7, padding: '8px 12px' }}>GITHUB</a>
-                )}
-                <button
-                  onClick={() => setActive(null)}
-                  className="font-pixel ml-auto"
-                  style={{
-                    fontSize: 7, padding: '8px 12px', cursor: 'none',
-                    background: 'transparent', color: 'var(--px-coral)',
-                    border: '1px solid var(--px-coral)',
-                  }}
-                >
-                  CLOSE ✕
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                  <span className="text-sm transition-transform group-hover:translate-x-1" style={{ color: 'var(--text-muted)' }}>→</span>
+                </div>
+                <h4 className="font-semibold text-sm mb-2 group-hover:text-accent-violet transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  {p.title}
+                </h4>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+                  {p.description}
+                </p>
+                <div className="flex flex-wrap gap-1 mt-3">
+                  {p.stack.slice(0, 3).map(t => (
+                    <span key={t} className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </motion.a>
+            ))}
+          </div>
+        </motion.div>
+      </div>
     </section>
   )
 }

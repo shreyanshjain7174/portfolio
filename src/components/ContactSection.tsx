@@ -2,136 +2,140 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 
-interface Link {
-  label: string
-  display: string
-  href: string
-}
 
-const LINKS: Link[] = [
-  { label: 'Email',    display: 'shreyansh@sancheti.dev',            href: 'mailto:shreyansh@sancheti.dev' },
-  { label: 'GitHub',   display: 'github.com/007ssancheti',           href: 'https://github.com/007ssancheti' },
-  { label: 'LinkedIn', display: 'linkedin.com/in/shreyanshsancheti', href: 'https://linkedin.com/in/shreyanshsancheti' },
+const SOCIALS = [
+  {
+    label: 'GitHub',
+    display: 'shreyanshjain7174',
+    href: 'https://github.com/shreyanshjain7174',
+    color: '#f1f1f4',
+  },
+  {
+    label: 'LinkedIn',
+    display: 'shreyansh-sancheti',
+    href: 'https://linkedin.com/in/shreyansh-sancheti',
+    color: '#3b82f6',
+  },
+  {
+    label: 'Twitter / X',
+    display: '@shrey_sancheti',
+    href: 'https://twitter.com/shrey_sancheti',
+    color: '#06b6d4',
+  },
+  {
+    label: 'Email',
+    display: '007ssancheti@gmail.com',
+    href: 'mailto:007ssancheti@gmail.com',
+    color: '#f59e0b',
+  },
 ]
 
 export default function ContactSection() {
-  const [cursor, setCursor] = useState<number | null>(null)
-  const [phase, setPhase] = useState<'idle' | 'saving' | 'saved'>('idle')
-
-  const handleSave = () => {
-    if (phase !== 'idle') return
-    setPhase('saving')
-    setTimeout(() => setPhase('saved'), 1800)
-  }
+  const [hovered, setHovered] = useState<number | null>(null)
 
   return (
     <section
       id="contact"
-      className="relative min-h-screen flex flex-col items-center justify-center px-4 py-24"
-      style={{ background: 'var(--px-bg)' }}
+      className="relative min-h-screen flex flex-col items-center justify-center px-6 py-24"
+      style={{ background: 'var(--bg-primary)' }}
     >
-      {/* Section label */}
-      <div className="max-w-4xl mx-auto w-full mb-16">
-        <div className="flex items-center gap-4">
-          <span className="font-pixel text-px-cyan" style={{ fontSize: 8 }}>05.</span>
-          <h2 className="font-pixel text-px-gold text-glow-gold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)' }}>
-            SAVE POINT
-          </h2>
-          <div className="flex-1 h-px" style={{ background: 'var(--px-border)' }} />
-        </div>
-      </div>
+      <div className="absolute inset-0 dot-grid pointer-events-none opacity-15" aria-hidden="true" />
+      <div className="mesh-gradient" aria-hidden="true" />
 
-      {/* Crystal */}
-      <div className="mb-10 text-center select-none" aria-hidden="true">
-        <motion.div
-          className="font-pixel"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-          style={{ fontSize: 'clamp(40px, 8vw, 72px)', color: 'var(--px-cyan)', display: 'inline-block' }}
-        >
-          ✦
-        </motion.div>
-        <p className="font-pixel text-px-cyan text-glow-cyan blink mt-3" style={{ fontSize: 9 }}>
-          SAVE POINT REACHED
-        </p>
-      </div>
-
-      {/* Panel */}
-      <div className="pixel-border-gold p-8 w-full max-w-sm" style={{ background: 'var(--px-surface)' }}>
-        <div className="font-pixel text-px-gold mb-6" style={{ fontSize: 9 }}>╔══ CONTACT ══╗</div>
-
-        {/* RPG link menu */}
-        <div className="space-y-2 mb-8">
-          {LINKS.map((lk, i) => (
-            <a
-              key={lk.label}
-              href={lk.href}
-              className="flex items-center gap-3 p-3 group transition-colors no-underline"
-              style={{ border: '1px solid var(--px-border)', cursor: 'none', display: 'flex' }}
-              onMouseEnter={() => setCursor(i)}
-              onMouseLeave={() => setCursor(null)}
+      <div className="max-w-4xl mx-auto w-full relative z-10">
+        <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center justify-center gap-4 mb-3">
+              <span className="font-mono text-sm font-medium" style={{ color: 'var(--accent-violet)' }}>04</span>
+              <div className="section-divider" />
+            </div>
+            <h2
+              className="font-display font-bold leading-tight mb-4"
+              style={{ fontSize: 'clamp(32px, 5vw, 56px)', color: 'var(--text-primary)' }}
             >
-              <span
-                className="font-pixel text-px-cyan"
-                style={{ fontSize: 10, visibility: cursor === i ? 'visible' : 'hidden', flexShrink: 0 }}
+              Let&apos;s build{' '}
+              <span className="gradient-text">something great</span>
+              <br />
+              together.
+            </h2>
+            <p className="text-lg max-w-xl mx-auto" style={{ color: 'var(--text-secondary)' }}>
+              Looking to collaborate on distributed systems, open-source infrastructure, or interesting engineering challenges? Let&apos;s connect.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Contact cards */}
+        <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto mb-12">
+          {SOCIALS.map((s, i) => (
+            <motion.a
+              key={s.label}
+              href={s.href}
+              target={s.href.startsWith('mailto') ? undefined : '_blank'}
+              rel="noopener noreferrer"
+              className="glass-card p-5 flex items-center gap-4 no-underline group"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-semibold transition-all duration-300 flex-shrink-0"
+                style={{
+                  background: hovered === i ? `${s.color}20` : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${hovered === i ? `${s.color}40` : 'rgba(255,255,255,0.06)'}`,
+                  color: hovered === i ? s.color : 'var(--text-muted)',
+                }}
               >
-                ▶
-              </span>
-              <div>
-                <div
-                  className="font-pixel transition-colors"
-                  style={{ fontSize: 8, color: cursor === i ? 'var(--px-cyan)' : 'var(--px-text)' }}
-                >
-                  {lk.label}
+                {s.label[0]}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold group-hover:text-accent-violet transition-colors" style={{ color: 'var(--text-primary)' }}>
+                  {s.label}
                 </div>
-                <div className="font-terminal text-px-dim" style={{ fontSize: 16 }}>
-                  {lk.display}
+                <div className="text-sm truncate" style={{ color: 'var(--text-muted)' }}>
+                  {s.display}
                 </div>
               </div>
-            </a>
+              <span className="ml-auto text-lg transition-transform group-hover:translate-x-1 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                →
+              </span>
+            </motion.a>
           ))}
         </div>
 
-        {/* Save button */}
-        <button
-          className="px-btn w-full"
-          style={{ fontSize: 9, cursor: phase !== 'idle' ? 'default' : 'none' }}
-          onClick={handleSave}
-          disabled={phase !== 'idle'}
-          aria-live="polite"
-        >
-          {phase === 'saved' ? '✓ SAVED!' : phase === 'saving' ? 'SAVING...' : "LET'S CONNECT"}
-        </button>
-
-        {/* Saving progress bar */}
-        <AnimatedSavingBar visible={phase === 'saving'} />
-      </div>
-
-      {/* Footer */}
-      <footer className="mt-20 text-center">
-        <div className="font-pixel text-px-dim" style={{ fontSize: 7 }}>BUILT WITH PIXELS &amp; PASSION</div>
-        <div className="font-pixel mt-2" style={{ fontSize: 6, color: 'var(--px-border)' }}>
-          © 2026 SHREYANSH SANCHETI · ALL RIGHTS RESERVED
-        </div>
-      </footer>
-    </section>
-  )
-}
-
-function AnimatedSavingBar({ visible }: { visible: boolean }) {
-  if (!visible) return null
-  return (
-    <div className="mt-4">
-      <div className="font-pixel text-px-dim mb-1" style={{ fontSize: 7 }}>SAVING PROGRESS...</div>
-      <div className="stat-bar-track">
+        {/* CTA */}
         <motion.div
-          className="stat-bar-fill"
-          initial={{ width: 0 }}
-          animate={{ width: '100%' }}
-          transition={{ duration: 1.6, ease: 'linear' }}
-          style={{ background: 'var(--px-gold)' }}
-        />
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          <a href="mailto:007ssancheti@gmail.com" className="btn-primary" style={{ padding: '14px 32px', fontSize: 15 }}>
+            Send me an email
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 8h10m0 0L9 4m4 4L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+        </motion.div>
+
+        {/* Footer */}
+        <footer className="mt-24 pt-8 text-center" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Designed &amp; built by Shreyansh Sancheti
+          </p>
+          <p className="text-xs mt-2" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
+            © {new Date().getFullYear()} · All rights reserved
+          </p>
+        </footer>
       </div>
-    </div>
+    </section>
   )
 }

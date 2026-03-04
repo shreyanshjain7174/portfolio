@@ -1,152 +1,179 @@
 'use client'
-import { useEffect, useRef } from 'react'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useRef } from 'react'
+import { motion } from 'framer-motion'
+import SectionHeading from './SectionHeading'
 
-gsap.registerPlugin(ScrollTrigger)
 
 const STATS = [
-  { label: 'STR', name: 'Problem Solving', value: 92, color: 'var(--px-coral)' },
-  { label: 'INT', name: 'Architecture',    value: 90, color: 'var(--px-cyan)' },
-  { label: 'DEX', name: 'Frontend Craft',  value: 87, color: 'var(--px-green)' },
-  { label: 'WIS', name: 'System Design',   value: 88, color: 'var(--px-gold)' },
-  { label: 'CHA', name: 'Collaboration',   value: 95, color: 'var(--px-purple)' },
+  { label: 'Years Experience', value: '5+', icon: '⏱' },
+  { label: 'Companies', value: '3', icon: '🏢' },
+  { label: 'Open Source Contributions', value: '50+', icon: '⟁' },
+  { label: 'Systems Built', value: '20+', icon: '⚙' },
+]
+
+const EXPERIENCE = [
+  {
+    role: 'Software Development Engineer',
+    company: 'Arista Networks',
+    period: 'Current',
+    color: '#3b82f6',
+  },
+  {
+    role: 'Software Development Engineer II',
+    company: 'IBM ISDL',
+    period: 'Previous',
+    color: '#8b5cf6',
+  },
+  {
+    role: 'Ceph Storage Developer',
+    company: 'Open Source Contributor',
+    period: 'Ongoing',
+    color: '#06b6d4',
+  },
 ]
 
 export default function AboutSection() {
   const sectionRef = useRef<HTMLElement>(null)
-  const barRefs = useRef<(HTMLDivElement | null)[]>([])
-  const counterRef = useRef<HTMLSpanElement>(null)
-
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      barRefs.current.forEach((bar, i) => {
-        if (!bar) return
-        const fill = bar.querySelector<HTMLElement>('.stat-bar-fill')
-        if (!fill) return
-        gsap.fromTo(
-          fill,
-          { width: '0%' },
-          {
-            width: `${STATS[i].value}%`,
-            duration: 1.2,
-            delay: i * 0.12,
-            ease: 'power2.out',
-            scrollTrigger: {
-              trigger: sectionRef.current,
-              start: 'top 70%',
-              once: true,
-            },
-          }
-        )
-      })
-
-      if (counterRef.current) {
-        const obj = { val: 0 }
-        gsap.to(obj, {
-          val: 5,
-          duration: 2,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: sectionRef.current, start: 'top 70%', once: true },
-          onUpdate() {
-            if (counterRef.current) counterRef.current.textContent = String(Math.round(obj.val))
-          },
-        })
-      }
-    }, sectionRef)
-
-    return () => ctx.revert()
-  }, [])
 
   return (
     <section
       id="about"
       ref={sectionRef}
-      className="relative min-h-screen flex flex-col justify-center px-4 py-24"
-      style={{ background: 'var(--px-surface)' }}
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      style={{ background: 'var(--bg-secondary)' }}
     >
-      {/* Section label */}
-      <div className="max-w-5xl mx-auto w-full mb-12">
-        <div className="flex items-center gap-4">
-          <span className="font-pixel text-px-cyan" style={{ fontSize: 8 }}>02.</span>
-          <h2 className="font-pixel text-px-gold text-glow-gold" style={{ fontSize: 'clamp(14px, 2.5vw, 24px)' }}>
-            CHARACTER STATS
-          </h2>
-          <div className="flex-1 h-px" style={{ background: 'var(--px-border)' }} />
-        </div>
-      </div>
+      <div className="mesh-gradient" aria-hidden="true" />
 
-      <div className="max-w-5xl mx-auto w-full grid md:grid-cols-2 gap-10 items-start">
+      <div className="max-w-6xl mx-auto w-full relative z-10">
+        <SectionHeading
+          number="01"
+          title="About Me"
+          subtitle="Software Engineer passionate about building scalable distributed systems and infrastructure."
+        />
 
-        {/* Bio panel */}
-        <div className="pixel-border-cyan p-6" style={{ background: 'var(--px-bg)' }}>
-          {/* Pixel portrait */}
-          <div className="flex justify-center mb-6">
-            <div className="p-3" style={{ border: '2px solid var(--px-border)' }}>
-              <svg viewBox="0 0 32 32" width="128" height="128" style={{ imageRendering: 'pixelated', display: 'block' }}
-                aria-label="Pixel portrait of Shreyansh">
-                <rect width="32" height="32" fill="#16213E" />
-                <rect x="10" y="4" width="12" height="12" fill="#E8D5C0" />
-                <rect x="10" y="4" width="12" height="3" fill="#2D1B00" />
-                <rect x="10" y="4" width="2" height="6" fill="#2D1B00" />
-                <rect x="12" y="9" width="2" height="2" fill="#1A1A2E" />
-                <rect x="18" y="9" width="2" height="2" fill="#1A1A2E" />
-                <rect x="13" y="12" width="6" height="1" fill="#c47a5a" />
-                <rect x="8" y="16" width="16" height="10" fill="#7B2FBE" />
-                <rect x="12" y="18" width="8" height="1" fill="#00F5FF" />
-                <rect x="12" y="20" width="5" height="1" fill="#FFD700" />
-                <rect x="4" y="16" width="4" height="8" fill="#7B2FBE" />
-                <rect x="24" y="16" width="4" height="8" fill="#7B2FBE" />
-                <rect x="3" y="24" width="5" height="4" fill="#E8D5C0" />
-                <rect x="24" y="24" width="5" height="4" fill="#E8D5C0" />
-              </svg>
-            </div>
-          </div>
-          <div className="text-center font-pixel text-px-cyan mb-4" style={{ fontSize: 8 }}>SHREYANSH.EXE</div>
-
-          <div className="space-y-2 font-terminal text-px-text" style={{ fontSize: 20 }}>
-            <p><span className="text-px-gold">{'>'}</span> Full Stack Developer</p>
-            <p><span className="text-px-gold">{'>'}</span> <span ref={counterRef}>0</span>+ yrs experience</p>
-            <p><span className="text-px-gold">{'>'}</span> React · Node · TypeScript</p>
-            <p><span className="text-px-gold">{'>'}</span> Cloud-native thinker</p>
-            <p><span className="text-px-gold">{'>'}</span> Pixel-perfect UI lover<span className="blink">_</span></p>
-          </div>
-        </div>
-
-        {/* Stats panel */}
-        <div className="pixel-border p-6" style={{ background: 'var(--px-bg)' }}>
-          <div className="font-pixel text-px-cyan mb-6" style={{ fontSize: 9 }}>
-            ╔══ STAT SHEET ══╗
-          </div>
-
-          <div className="space-y-5">
-            {STATS.map((stat, i) => (
-              <div key={stat.label} ref={el => { barRefs.current[i] = el }}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-3">
-                    <span className="font-pixel" style={{ fontSize: 8, color: stat.color, minWidth: 28 }}>
-                      {stat.label}
-                    </span>
-                    <span className="font-terminal text-px-dim" style={{ fontSize: 18 }}>
-                      {stat.name}
-                    </span>
-                  </div>
-                  <span className="font-pixel text-px-text" style={{ fontSize: 8 }}>{stat.value}</span>
-                </div>
-                <div className="stat-bar-track">
-                  <div
-                    className="stat-bar-fill"
-                    style={{ background: `linear-gradient(90deg, ${stat.color}66, ${stat.color})` }}
-                  />
-                </div>
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+          {STATS.map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              className="glass-card p-6 text-center"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1, duration: 0.5 }}
+            >
+              <div className="text-2xl mb-2">{stat.icon}</div>
+              <div className="font-display font-bold text-3xl md:text-4xl gradient-text mb-1">
+                {stat.value}
               </div>
-            ))}
-          </div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </div>
 
-          <div className="mt-8 pt-4 flex justify-between font-pixel text-px-dim" style={{ fontSize: 7, borderTop: '1px solid var(--px-border)' }}>
-            <span>CLASS: FULL STACK</span>
-            <span>RANK: S+</span>
-          </div>
+        {/* Two column: Bio + Experience */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Bio */}
+          <motion.div
+            className="glass-card p-8"
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h3 className="font-display font-semibold text-xl mb-4" style={{ color: 'var(--text-primary)' }}>
+              Who I Am
+            </h3>
+            <div className="space-y-4 text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+              <p>
+                I&apos;m a Software Engineer with a specialized focus on{' '}
+                <span style={{ color: 'var(--accent-cyan)' }}>networking</span>,{' '}
+                <span style={{ color: 'var(--accent-violet)' }}>distributed systems</span>, and{' '}
+                <span style={{ color: 'var(--accent-blue)' }}>system programming</span>.
+              </p>
+              <p>
+                Currently at <strong style={{ color: 'var(--text-primary)' }}>Arista Networks</strong>, I work on building high-performance systems. Previously, I was an SDE-II at{' '}
+                <strong style={{ color: 'var(--text-primary)' }}>IBM ISDL</strong>, where I developed Ceph storage solutions.
+              </p>
+              <p>
+                I&apos;m proficient in <span className="font-mono text-sm px-1.5 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.1)', color: 'var(--accent-violet)' }}>C++</span>{' '}
+                <span className="font-mono text-sm px-1.5 py-0.5 rounded" style={{ background: 'rgba(59,130,246,0.1)', color: 'var(--accent-blue)' }}>Rust</span>{' '}
+                <span className="font-mono text-sm px-1.5 py-0.5 rounded" style={{ background: 'rgba(6,182,212,0.1)', color: 'var(--accent-cyan)' }}>Go</span>{' '}
+                <span className="font-mono text-sm px-1.5 py-0.5 rounded" style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--accent-gold)' }}>Python</span>
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                ⚡ Fun fact: I&apos;ve hacked into my own Wi-Fi network (legally!) just to test its security and strengthen it.
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Experience timeline */}
+          <motion.div
+            className="glass-card p-8"
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
+            <h3 className="font-display font-semibold text-xl mb-6" style={{ color: 'var(--text-primary)' }}>
+              Experience
+            </h3>
+            <div className="space-y-6">
+              {EXPERIENCE.map((exp, i) => (
+                <motion.div
+                  key={exp.company}
+                  className="flex gap-4"
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                >
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ background: exp.color, boxShadow: `0 0 10px ${exp.color}40` }}
+                    />
+                    {i < EXPERIENCE.length - 1 && (
+                      <div className="w-px flex-1 mt-2" style={{ background: 'var(--border-subtle)' }} />
+                    )}
+                  </div>
+                  <div className="pb-6">
+                    <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {exp.role}
+                    </div>
+                    <div className="text-sm" style={{ color: exp.color }}>
+                      {exp.company}
+                    </div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+                      {exp.period}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Interests */}
+            <div className="mt-6 pt-6" style={{ borderTop: '1px solid var(--border-subtle)' }}>
+              <div className="text-sm mb-3" style={{ color: 'var(--text-muted)' }}>Currently learning</div>
+              <div className="flex flex-wrap gap-2">
+                {['Rook', 'Terraform', 'OpenShift'].map(tag => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      background: 'rgba(139,92,246,0.1)',
+                      border: '1px solid rgba(139,92,246,0.2)',
+                      color: 'var(--accent-violet)',
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </section>
