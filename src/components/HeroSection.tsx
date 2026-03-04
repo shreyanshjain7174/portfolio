@@ -1,6 +1,12 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
+import dynamic from 'next/dynamic'
+
+const Hero3DScene = dynamic(() => import('./Hero3DScene'), {
+  ssr: false,
+  loading: () => <div className="absolute inset-0" />,
+})
 
 const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/shreyanshjain7174', icon: '⟁' },
@@ -98,6 +104,9 @@ export default function HeroSection() {
 
       {/* Mesh gradient orbs */}
       <div className="mesh-gradient" aria-hidden="true" />
+
+      {/* 3D Scene */}
+      <Hero3DScene />
 
       {/* Dot grid subtle overlay */}
       <div className="absolute inset-0 dot-grid pointer-events-none opacity-30" aria-hidden="true" />
