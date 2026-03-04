@@ -1,12 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import dynamic from 'next/dynamic'
-
-const Hero3DScene = dynamic(() => import('./Hero3DScene'), {
-  ssr: false,
-  loading: () => <div className="absolute inset-0" />,
-})
+import Hero3DScene from './Hero3DScene'
 
 const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/shreyanshjain7174', icon: '⟁' },
