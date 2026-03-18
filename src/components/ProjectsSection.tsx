@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import SectionHeading from './SectionHeading'
+import { Meteors } from './Meteors'
 
 interface Project {
   id: number
@@ -90,10 +91,11 @@ export default function ProjectsSection() {
   return (
     <section
       id="projects"
-      className="relative min-h-screen flex flex-col justify-center px-6 py-24"
+      className="relative min-h-screen flex flex-col justify-center px-6 py-24 overflow-hidden"
       style={{ background: 'var(--bg-secondary)' }}
     >
       <div className="mesh-gradient" aria-hidden="true" />
+      <Meteors number={25} />
 
       <div className="max-w-6xl mx-auto w-full relative z-10">
         <SectionHeading
@@ -107,11 +109,12 @@ export default function ProjectsSection() {
           {PROJECTS.filter(p => p.featured).map((p, i) => (
             <motion.article
               key={p.id}
-              className="glass-card overflow-hidden group"
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-30px' }}
-              transition={{ delay: i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="glass-card overflow-hidden group shadow-[0_0_15px_rgba(0,0,0,0.2)] hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] transition-all duration-500"
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: '-50px' }}
+              whileHover={{ y: -5, scale: 1.02 }}
+              transition={{ delay: i * 0.1, duration: 0.6, type: "spring", stiffness: 100 }}
             >
               {/* Color accent bar */}
               <div className="h-1" style={{ background: `linear-gradient(90deg, ${p.color}, ${p.color}80)` }} />

@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
+  darkMode: 'class',
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -57,12 +58,21 @@ const config: Config = {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%':      { transform: 'translateY(8px)' },
         },
+        'meteor': {
+          '0%': { transform: 'rotate(215deg) translateX(0)', opacity: '1' },
+          '70%': { opacity: '1' },
+          '100%': {
+            transform: 'rotate(215deg) translateX(-500px)',
+            opacity: '0',
+          },
+        },
       },
       animation: {
         'float':          'float 6s ease-in-out infinite',
         'pulse-glow':     'pulse-glow 3s ease-in-out infinite',
         'gradient-shift': 'gradient-shift 8s ease infinite',
         'scroll-bounce':  'scroll-bounce 2s ease-in-out infinite',
+        'meteor-effect':  'meteor 5s linear infinite',
       },
     },
   },

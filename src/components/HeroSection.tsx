@@ -2,6 +2,8 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Hero3DScene from './Hero3DScene'
+import { Meteors } from './Meteors'
+import { RemotionPlayerWrapper } from './RemotionPlayerWrapper'
 
 const SOCIALS = [
   { label: 'GitHub', href: 'https://github.com/shreyanshjain7174', icon: '⟁' },
@@ -103,6 +105,9 @@ export default function HeroSection() {
       {/* 3D Scene */}
       <Hero3DScene />
 
+      {/* Meteors effect */}
+      <Meteors number={30} />
+
       {/* Dot grid subtle overlay */}
       <div className="absolute inset-0 dot-grid pointer-events-none opacity-30" aria-hidden="true" />
 
@@ -124,6 +129,9 @@ export default function HeroSection() {
             SDE @ Arista Networks
           </span>
         </motion.div>
+
+        {/* Remotion Intro Sequence */}
+        <RemotionPlayerWrapper />
 
         {/* Main title */}
         <motion.h1
