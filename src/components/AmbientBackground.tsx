@@ -27,27 +27,16 @@ function getTimeOfDay(hour: number): TimeOfDay {
   return 'night';
 }
 
-function getTimeGradient(time: TimeOfDay, isDark: boolean): string {
-  if (isDark) {
-    const gradients: Record<TimeOfDay, string> = {
-      night: 'radial-gradient(ellipse at 20% 80%, rgba(15, 23, 42, 0.6) 0%, transparent 70%), radial-gradient(ellipse at 80% 20%, rgba(30, 27, 75, 0.4) 0%, transparent 60%)',
-      dawn: 'radial-gradient(ellipse at 30% 90%, rgba(127, 29, 29, 0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 10%, rgba(88, 28, 135, 0.2) 0%, transparent 60%)',
-      morning: 'radial-gradient(ellipse at 80% 20%, rgba(234, 179, 8, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%)',
-      day: 'radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 50%)',
-      evening: 'radial-gradient(ellipse at 80% 80%, rgba(234, 88, 12, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%)',
-      dusk: 'radial-gradient(ellipse at 50% 100%, rgba(139, 92, 246, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 50% 0%, rgba(30, 41, 59, 0.5) 0%, transparent 50%)',
-    };
-    return gradients[time];
+function getSkyBackgroundImage(time: TimeOfDay, weather: WeatherCondition): string {
+  if (weather === 'snowy') return '/images/weather/snow-day.jpg';
+  if (weather === 'rainy' || weather === 'stormy' || weather === 'cloudy' || weather === 'foggy') {
+    if (time === 'night' || time === 'dusk') return '/images/weather/rain-night.jpg';
+    return '/images/weather/rain-day.jpg';
   }
-  const gradients: Record<TimeOfDay, string> = {
-    night: 'radial-gradient(ellipse at 20% 80%, rgba(30, 41, 59, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(88, 28, 135, 0.06) 0%, transparent 50%)',
-    dawn: 'radial-gradient(ellipse at 30% 90%, rgba(251, 146, 60, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 10%, rgba(244, 114, 182, 0.08) 0%, transparent 50%)',
-    morning: 'radial-gradient(ellipse at 80% 10%, rgba(250, 204, 21, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 90%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
-    day: 'radial-gradient(ellipse at 50% 0%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
-    evening: 'radial-gradient(ellipse at 80% 80%, rgba(251, 146, 60, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(196, 181, 253, 0.1) 0%, transparent 50%)',
-    dusk: 'radial-gradient(ellipse at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 0%, rgba(100, 116, 139, 0.08) 0%, transparent 40%)',
-  };
-  return gradients[time];
+  // Clear or default
+  if (time === 'night') return '/images/weather/clear-night.jpg';
+  if (time === 'dawn' || time === 'dusk' || time === 'evening') return '/images/weather/dusk.jpg';
+  return '/images/weather/clear-day.jpg';
 }
 
 /* ─── WEATHER MAPPER ─── */
@@ -369,64 +358,7 @@ function Clouds3D() {
   );
 }
 
-/* ─── 3D SUNLIGHT MOTES (CLEAR DAY) ─── */
 
-function SunMotes3D({ isDark }: { isDark: boolean }) {
-  const motes = useMemo(() => {
-    return Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 15 + Math.random() * 35, // large glowing blobs
-      delay: Math.random() * 5,
-      duration: 15 + Math.random() * 20, // very slow
-      z: -50 - Math.random() * 100,
-      driftX: (Math.random() - 0.5) * 30,
-      driftY: (Math.random() - 0.5) * 30,
-    }));
-  }, []);
-
-  return (
-    <>
-      {/* Drifting sun dust/motes */}
-      <div className="absolute inset-0 overflow-hidden z-0">
-        {motes.map((mote) => (
-          <motion.div
-            key={mote.id}
-            className={`absolute rounded-full ${isDark ? 'bg-amber-500' : 'bg-amber-400'}`}
-            style={{
-              left: `${mote.x}%`,
-              top: `${mote.y}%`,
-              width: mote.size,
-              height: mote.size,
-              filter: 'blur(10px)',
-              transform: `translateZ(${mote.z}px)`,
-            }}
-            animate={{
-              x: [0, mote.driftX, -mote.driftX * 0.3, 0],
-              y: [0, mote.driftY, -mote.driftY * 0.3, 0],
-              opacity: [0, 0.4, 0.15, 0],
-              scale: [0.8, 1.2, 0.9, 0.8]
-            }}
-            transition={{
-              duration: mote.duration,
-              delay: mote.delay,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-        ))}
-      </div>
-      {/* Sun glow across the top right */}
-      <motion.div 
-        className={`absolute -top-32 -right-32 w-[30rem] h-[30rem] rounded-full blur-[80px] pointer-events-none ${isDark ? 'bg-amber-600' : 'bg-amber-300'}`}
-        style={{ transform: 'translateZ(-200px)' }}
-        animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.05, 1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
-      />
-    </>
-  );
-}
 
 /* ─── AMBIENT STATUS BADGE ─── */
 
@@ -531,20 +463,29 @@ export default function AmbientBackground({ isDark }: { isDark: boolean }) {
   const showRain = state.weather === 'rainy' || state.weather === 'stormy';
   const showSnow = state.weather === 'snowy';
   const showClouds = state.weather === 'cloudy' || state.weather === 'foggy';
-  const showSunMotes = !showStars && !showRain && !showSnow && !showClouds;
 
   if (!mounted) return null;
 
   return (
     <>
-      {/* Time-based ambient gradient */}
+      {/* Live sky photo background with slow pan animation */}
       <motion.div
-        className="fixed inset-0 pointer-events-none z-0 transition-all duration-[3000ms]"
-        style={{ background: getTimeGradient(state.time, isDark) }}
-        animate={{ opacity: 1 }}
-        initial={{ opacity: 0 }}
-        transition={{ duration: 2 }}
-      />
+        className="fixed -inset-[10%] pointer-events-none z-0"
+        style={{ 
+          backgroundImage: `url(${getSkyBackgroundImage(state.time, state.weather)})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+        initial={{ x: '-2%', y: '-2%' }}
+        animate={{ 
+          x: ['-2%', '2%', '-2%'],
+          y: ['-2%', '1%', '-2%']
+        }}
+        transition={{ duration: 120, repeat: Infinity, ease: 'linear' }}
+      >
+        {/* Contrast overlay so white/dark text remains perfectly legible */}
+        <div className={`absolute inset-0 transition-colors duration-1000 ${isDark ? 'bg-[#0a0a0a]/75' : 'bg-neutral-50/70'}`} />
+      </motion.div>
 
       {/* 3D Parallax Weather Scene */}
       <AnimatePresence>
@@ -560,7 +501,6 @@ export default function AmbientBackground({ isDark }: { isDark: boolean }) {
             {showRain && <Rain3D />}
             {showSnow && <Snow3D />}
             {showClouds && <Clouds3D />}
-            {showSunMotes && <SunMotes3D isDark={isDark} />}
           </Parallax3DScene>
         </motion.div>
       </AnimatePresence>
