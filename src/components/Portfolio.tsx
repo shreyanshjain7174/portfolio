@@ -295,7 +295,7 @@ export default function Portfolio() {
   const { scrollY } = useScroll();
 
   return (
-    <div className="relative min-h-screen bg-neutral-50 dark:bg-[#0a0a0a] text-neutral-900 dark:text-neutral-100 transition-colors duration-300 selection:bg-purple-300/30 cursor-none lg:cursor-none">
+    <div className="relative min-h-screen text-neutral-900 dark:text-neutral-100 transition-colors duration-300 selection:bg-purple-300/30 cursor-none lg:cursor-none">
 
       {/* Ambient Weather + Time Background */}
       {mounted && <AmbientBackground isDark={theme === 'dark'} />}

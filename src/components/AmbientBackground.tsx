@@ -29,23 +29,25 @@ function getTimeOfDay(hour: number): TimeOfDay {
 
 function getTimeGradient(time: TimeOfDay, isDark: boolean): string {
   if (isDark) {
+    // True dark mode, but rich sky gradients for the time
     const gradients: Record<TimeOfDay, string> = {
-      night: 'radial-gradient(ellipse at 20% 80%, rgba(15, 23, 42, 0.6) 0%, transparent 70%), radial-gradient(ellipse at 80% 20%, rgba(30, 27, 75, 0.4) 0%, transparent 60%)',
-      dawn: 'radial-gradient(ellipse at 30% 90%, rgba(127, 29, 29, 0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 10%, rgba(88, 28, 135, 0.2) 0%, transparent 60%)',
-      morning: 'radial-gradient(ellipse at 80% 20%, rgba(234, 179, 8, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%)',
-      day: 'radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 50%)',
-      evening: 'radial-gradient(ellipse at 80% 80%, rgba(234, 88, 12, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%)',
-      dusk: 'radial-gradient(ellipse at 50% 100%, rgba(139, 92, 246, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 50% 0%, rgba(30, 41, 59, 0.5) 0%, transparent 50%)',
+      night: 'linear-gradient(to bottom, #020617, #0f172a, #1e1b4b)',
+      dawn: 'linear-gradient(to bottom, #1e1b4b, #312e81, #4c1d95, #7c2d12)',
+      morning: 'linear-gradient(to bottom, #0f172a, #111827, #1e3a8a, #0c4a6e)',
+      day: 'linear-gradient(to bottom, #111827, #0c4a6e, #0369a1)', // Deep dark blue for day to remain "dark theme"
+      evening: 'linear-gradient(to bottom, #1e3a8a, #4c1d95, #9a3412)',
+      dusk: 'linear-gradient(to bottom, #020617, #0f172a, #312e81, #2e1065)',
     };
     return gradients[time];
   }
+  // Light mode, bright sky gradients
   const gradients: Record<TimeOfDay, string> = {
-    night: 'radial-gradient(ellipse at 20% 80%, rgba(30, 41, 59, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(88, 28, 135, 0.06) 0%, transparent 50%)',
-    dawn: 'radial-gradient(ellipse at 30% 90%, rgba(251, 146, 60, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 10%, rgba(244, 114, 182, 0.08) 0%, transparent 50%)',
-    morning: 'radial-gradient(ellipse at 80% 10%, rgba(250, 204, 21, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 90%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
-    day: 'radial-gradient(ellipse at 50% 0%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
-    evening: 'radial-gradient(ellipse at 80% 80%, rgba(251, 146, 60, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(196, 181, 253, 0.1) 0%, transparent 50%)',
-    dusk: 'radial-gradient(ellipse at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 0%, rgba(100, 116, 139, 0.08) 0%, transparent 40%)',
+    night: 'linear-gradient(to bottom, #475569, #334155, #1e293b, #0f172a)', // Muted night for light theme
+    dawn: 'linear-gradient(to bottom, #c4b5fd, #fbcfe8, #fed7aa, #fef08a)',
+    morning: 'linear-gradient(to bottom, #7dd3fc, #bae6fd, #e0f2fe, #f0f9ff)',
+    day: 'linear-gradient(to bottom, #38bdf8, #7dd3fc, #bae6fd, #e0f2fe)',
+    evening: 'linear-gradient(to bottom, #a78bfa, #f472b6, #fb923c, #fef08a)',
+    dusk: 'linear-gradient(to bottom, #6366f1, #8b5cf6, #c084fc, #e879f9)',
   };
   return gradients[time];
 }
