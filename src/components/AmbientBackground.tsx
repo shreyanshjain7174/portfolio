@@ -29,25 +29,23 @@ function getTimeOfDay(hour: number): TimeOfDay {
 
 function getTimeGradient(time: TimeOfDay, isDark: boolean): string {
   if (isDark) {
-    // True dark mode, but rich sky gradients for the time
     const gradients: Record<TimeOfDay, string> = {
-      night: 'linear-gradient(to bottom, #020617, #0f172a, #1e1b4b)',
-      dawn: 'linear-gradient(to bottom, #1e1b4b, #312e81, #4c1d95, #7c2d12)',
-      morning: 'linear-gradient(to bottom, #0f172a, #111827, #1e3a8a, #0c4a6e)',
-      day: 'linear-gradient(to bottom, #111827, #0c4a6e, #0369a1)', // Deep dark blue for day to remain "dark theme"
-      evening: 'linear-gradient(to bottom, #1e3a8a, #4c1d95, #9a3412)',
-      dusk: 'linear-gradient(to bottom, #020617, #0f172a, #312e81, #2e1065)',
+      night: 'radial-gradient(ellipse at 20% 80%, rgba(15, 23, 42, 0.6) 0%, transparent 70%), radial-gradient(ellipse at 80% 20%, rgba(30, 27, 75, 0.4) 0%, transparent 60%)',
+      dawn: 'radial-gradient(ellipse at 30% 90%, rgba(127, 29, 29, 0.15) 0%, transparent 60%), radial-gradient(ellipse at 70% 10%, rgba(88, 28, 135, 0.2) 0%, transparent 60%)',
+      morning: 'radial-gradient(ellipse at 80% 20%, rgba(234, 179, 8, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 50%)',
+      day: 'radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.06) 0%, transparent 50%)',
+      evening: 'radial-gradient(ellipse at 80% 80%, rgba(234, 88, 12, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%)',
+      dusk: 'radial-gradient(ellipse at 50% 100%, rgba(139, 92, 246, 0.12) 0%, transparent 60%), radial-gradient(ellipse at 50% 0%, rgba(30, 41, 59, 0.5) 0%, transparent 50%)',
     };
     return gradients[time];
   }
-  // Light mode, bright sky gradients
   const gradients: Record<TimeOfDay, string> = {
-    night: 'linear-gradient(to bottom, #475569, #334155, #1e293b, #0f172a)', // Muted night for light theme
-    dawn: 'linear-gradient(to bottom, #c4b5fd, #fbcfe8, #fed7aa, #fef08a)',
-    morning: 'linear-gradient(to bottom, #7dd3fc, #bae6fd, #e0f2fe, #f0f9ff)',
-    day: 'linear-gradient(to bottom, #38bdf8, #7dd3fc, #bae6fd, #e0f2fe)',
-    evening: 'linear-gradient(to bottom, #a78bfa, #f472b6, #fb923c, #fef08a)',
-    dusk: 'linear-gradient(to bottom, #6366f1, #8b5cf6, #c084fc, #e879f9)',
+    night: 'radial-gradient(ellipse at 20% 80%, rgba(30, 41, 59, 0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(88, 28, 135, 0.06) 0%, transparent 50%)',
+    dawn: 'radial-gradient(ellipse at 30% 90%, rgba(251, 146, 60, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 10%, rgba(244, 114, 182, 0.08) 0%, transparent 50%)',
+    morning: 'radial-gradient(ellipse at 80% 10%, rgba(250, 204, 21, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 20% 90%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
+    day: 'radial-gradient(ellipse at 50% 0%, rgba(186, 230, 253, 0.15) 0%, transparent 50%)',
+    evening: 'radial-gradient(ellipse at 80% 80%, rgba(251, 146, 60, 0.12) 0%, transparent 50%), radial-gradient(ellipse at 20% 20%, rgba(196, 181, 253, 0.1) 0%, transparent 50%)',
+    dusk: 'radial-gradient(ellipse at 50% 100%, rgba(167, 139, 250, 0.1) 0%, transparent 50%), radial-gradient(ellipse at 50% 0%, rgba(100, 116, 139, 0.08) 0%, transparent 40%)',
   };
   return gradients[time];
 }
@@ -371,6 +369,65 @@ function Clouds3D() {
   );
 }
 
+/* ─── 3D SUNLIGHT MOTES (CLEAR DAY) ─── */
+
+function SunMotes3D({ isDark }: { isDark: boolean }) {
+  const motes = useMemo(() => {
+    return Array.from({ length: 15 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100,
+      y: Math.random() * 100,
+      size: 15 + Math.random() * 35, // large glowing blobs
+      delay: Math.random() * 5,
+      duration: 15 + Math.random() * 20, // very slow
+      z: -50 - Math.random() * 100,
+      driftX: (Math.random() - 0.5) * 30,
+      driftY: (Math.random() - 0.5) * 30,
+    }));
+  }, []);
+
+  return (
+    <>
+      {/* Drifting sun dust/motes */}
+      <div className="absolute inset-0 overflow-hidden z-0">
+        {motes.map((mote) => (
+          <motion.div
+            key={mote.id}
+            className={`absolute rounded-full ${isDark ? 'bg-amber-400/5' : 'bg-amber-500/10'}`}
+            style={{
+              left: `${mote.x}%`,
+              top: `${mote.y}%`,
+              width: mote.size,
+              height: mote.size,
+              filter: 'blur(10px)',
+              transform: `translateZ(${mote.z}px)`,
+            }}
+            animate={{
+              x: [0, mote.driftX, -mote.driftX * 0.3, 0],
+              y: [0, mote.driftY, -mote.driftY * 0.3, 0],
+              opacity: [0, 0.7, 0.3, 0],
+              scale: [0.8, 1.2, 0.9, 0.8]
+            }}
+            transition={{
+              duration: mote.duration,
+              delay: mote.delay,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
+      </div>
+      {/* Sun glow across the top right */}
+      <motion.div 
+        className={`absolute -top-32 -right-32 w-[30rem] h-[30rem] rounded-full blur-[80px] pointer-events-none ${isDark ? 'bg-amber-500/10' : 'bg-amber-300/20'}`}
+        style={{ transform: 'translateZ(-200px)' }}
+        animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
+        transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </>
+  );
+}
+
 /* ─── AMBIENT STATUS BADGE ─── */
 
 function AmbientBadge({ state }: { state: AmbientState }) {
@@ -474,6 +531,7 @@ export default function AmbientBackground({ isDark }: { isDark: boolean }) {
   const showRain = state.weather === 'rainy' || state.weather === 'stormy';
   const showSnow = state.weather === 'snowy';
   const showClouds = state.weather === 'cloudy' || state.weather === 'foggy';
+  const showSunMotes = !showStars && !showRain && !showSnow && !showClouds;
 
   if (!mounted) return null;
 
@@ -490,22 +548,21 @@ export default function AmbientBackground({ isDark }: { isDark: boolean }) {
 
       {/* 3D Parallax Weather Scene */}
       <AnimatePresence>
-        {(showStars || showRain || showSnow || showClouds) && (
-          <motion.div
-            key="scene"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 2 }}
-          >
-            <Parallax3DScene>
-              {showStars && <StarField3D />}
-              {showRain && <Rain3D />}
-              {showSnow && <Snow3D />}
-              {showClouds && <Clouds3D />}
-            </Parallax3DScene>
-          </motion.div>
-        )}
+        <motion.div
+          key="scene"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 2 }}
+        >
+          <Parallax3DScene>
+            {showStars && <StarField3D />}
+            {showRain && <Rain3D />}
+            {showSnow && <Snow3D />}
+            {showClouds && <Clouds3D />}
+            {showSunMotes && <SunMotes3D isDark={isDark} />}
+          </Parallax3DScene>
+        </motion.div>
       </AnimatePresence>
     </>
   );
