@@ -393,7 +393,7 @@ function SunMotes3D({ isDark }: { isDark: boolean }) {
         {motes.map((mote) => (
           <motion.div
             key={mote.id}
-            className={`absolute rounded-full ${isDark ? 'bg-amber-400/5' : 'bg-amber-500/10'}`}
+            className={`absolute rounded-full ${isDark ? 'bg-amber-500' : 'bg-amber-400'}`}
             style={{
               left: `${mote.x}%`,
               top: `${mote.y}%`,
@@ -405,7 +405,7 @@ function SunMotes3D({ isDark }: { isDark: boolean }) {
             animate={{
               x: [0, mote.driftX, -mote.driftX * 0.3, 0],
               y: [0, mote.driftY, -mote.driftY * 0.3, 0],
-              opacity: [0, 0.7, 0.3, 0],
+              opacity: [0, 0.4, 0.15, 0],
               scale: [0.8, 1.2, 0.9, 0.8]
             }}
             transition={{
@@ -419,9 +419,9 @@ function SunMotes3D({ isDark }: { isDark: boolean }) {
       </div>
       {/* Sun glow across the top right */}
       <motion.div 
-        className={`absolute -top-32 -right-32 w-[30rem] h-[30rem] rounded-full blur-[80px] pointer-events-none ${isDark ? 'bg-amber-500/10' : 'bg-amber-300/20'}`}
+        className={`absolute -top-32 -right-32 w-[30rem] h-[30rem] rounded-full blur-[80px] pointer-events-none ${isDark ? 'bg-amber-600' : 'bg-amber-300'}`}
         style={{ transform: 'translateZ(-200px)' }}
-        animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
+        animate={{ opacity: [0.15, 0.3, 0.15], scale: [1, 1.05, 1] }}
         transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
     </>
