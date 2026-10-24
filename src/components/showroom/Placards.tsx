@@ -3,8 +3,9 @@
 import { animate, motion, useInView, useReducedMotion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { EDUCATION, HALL_OF_FAME, HIGHLIGHT_SKILLS, HOBBIES, JOBS, OPEN_SOURCE, PERSON, PROJECTS, SKILL_RACKS, SOCIALS, STAGES, TALK } from '@/content/content'
+import { HALL_OF_FAME, HIGHLIGHT_SKILLS, HOBBIES, JOBS, PERSON, PROJECTS, SKILL_RACKS, SOCIALS } from '@/content/content'
 import type { RepoLive } from '@/lib/github'
+import type { Quote } from '@/content/quotes'
 import { PROJECT_IMAGES, VEHICLES, WATCHES } from './stations'
 
 /* Words rise out of a mask, one after another (adapted from the 21st.dev "Text Reveal (Mask)" pattern). */
@@ -117,7 +118,14 @@ function ProjectShowcase({ ctx }: { ctx: PlacardCtx }) {
 
 const btn = 'inline-flex items-center gap-2 border border-ink/30 px-4 py-2.5 text-[15px] transition-colors duration-300 hover:bg-ink hover:text-ground'
 
-export type PlacardCtx = { project: number; setProject: (i: number) => void; live: Record<string, RepoLive> }
+export type PlacardCtx = {
+  project: number
+  setProject: (i: number) => void
+  live: Record<string, RepoLive>
+  inspect: (job: string) => void
+  quote: Quote
+  nextQuote: () => void
+}
 
 function ago(iso: string) {
   const d = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86400000))
@@ -154,6 +162,12 @@ export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
         <Rise><p className="text-[15px] text-muted">{v.era} · {v.note}</p></Rise>
         <MaskText text={j.company} className="mt-2 font-display text-[clamp(2.5rem,4.5vw,4rem)] leading-[0.95]" />
         <Rise i={1}><p className="mt-3">{j.title}</p><p className="tnum text-muted">{j.range}</p></Rise>
+        <Rise i={1}>
+          <button type="button" onClick={() => ctx.inspect(v.job)} className="mt-5 inline-flex items-center gap-3 border border-ink/25 px-4 py-2.5 text-[15px] transition-colors hover:border-ink hover:bg-ink hover:text-ground">
+            Look closer at the {v.kind === 'motorcycle' ? 'bike' : 'car'}
+            <span aria-hidden>→</span>
+          </button>
+        </Rise>
         <Rise i={2}>
           <ul className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
             {j.readouts.map((r) => (
@@ -207,8 +221,18 @@ export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
   if (id === 'watches') return (
     <Plate>
       <MaskText text="The watch drawer" className="font-display text-[clamp(2.5rem,4.5vw,4rem)] leading-[0.95]" />
-      <Rise i={1}><p className="mt-4 text-lg">Kept for the craft. Every one of them is set to Bengaluru time.</p></Rise>
-      <Rise i={2}><ul className="mt-5 space-y-1 text-[15.5px]">{WATCHES.map((w) => <li key={w.label}>{w.label}</li>)}</ul></Rise>
+      <Rise i={1}><p className="mt-4 text-lg">Kept for the craft. Every one of them is set to Bengaluru time. Pick one up to turn it over.</p></Rise>
+      <Rise i={2}>
+        <ul className="mt-5 space-y-1 text-[15.5px]">
+          {WATCHES.map((w) => (
+            <li key={w.label}>
+              <button type="button" onClick={() => ctx.inspect(`watch:${w.label}`)} className="group inline-flex items-center gap-3 py-1 hover:text-warm">
+                {w.label}<span aria-hidden className="text-muted transition-transform group-hover:translate-x-1 group-hover:text-warm">→</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </Rise>
     </Plate>
   )
   if (id === 'hall') return (
@@ -229,7 +253,12 @@ export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
         </ul>
       </Rise>
       <Rise i={2}>
+        <button type="button" onClick={() => ctx.inspect('hall')} className={`${btn} mt-6`}>Walk up to the wall <span aria-hidden>→</span></button>
+      </Rise>
+      <Rise i={2}>
         <div className="mt-7 flex flex-wrap gap-3">
+          <a href={`mailto:${PERSON.email}`} className={`${btn} bg-ink text-ground hover:bg-warm`}>Email me</a>
+          <a href={PERSON.resume} download="Shreyansh_Sancheti_Resume.pdf" className={btn}>Download resume</a>
           {SOCIALS.map((so) => <a key={so.label} href={so.url} target="_blank" rel="noreferrer" className={btn}>{so.label} <span className="text-muted">{so.handle}</span></a>)}
         </div>
       </Rise>
@@ -237,21 +266,21 @@ export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
   )
   if (id === 'exit') return (
     <Plate wide>
-      <MaskText text="Reach out" className="font-display text-[clamp(2.75rem,5vw,4.5rem)] leading-[0.95]" />
-      <Rise i={1}><p className="mt-4 text-lg">{PERSON.summary}</p></Rise>
-      <Rise i={2}>
-        <div className="mt-6 space-y-2 text-[15.5px]">
-          <p><span className="text-muted">On stage:</span> {TALK.event} ({TALK.where}), {TALK.title.toLowerCase()}; also {STAGES.filter((s) => s !== TALK.event).join(' and ')}.</p>
-          <p><span className="text-muted">Upstream:</span> {OPEN_SOURCE.map((o, k) => <span key={o.name}><a className="underline underline-offset-4 hover:text-warm" href={o.url}>{o.name}</a> ({o.note.toLowerCase()}){k < OPEN_SOURCE.length - 1 ? ', ' : ''}</span>)}.</p>
-          <p><span className="text-muted">Studied:</span> {EDUCATION.degree}, {EDUCATION.school}, {EDUCATION.grade}.</p>
-        </div>
-      </Rise>
-      <Rise i={3}>
-        <div className="mt-7 flex flex-wrap gap-3">
-          <a href={`mailto:${PERSON.email}`} className={`${btn} bg-ink text-ground hover:bg-warm`}>Email me</a>
-          <a href={PERSON.resume} download="Shreyansh_Sancheti_Resume.pdf" className={btn}>Download resume</a>
-          {SOCIALS.map((so) => <a key={so.label} href={so.url} target="_blank" rel="noreferrer" className={btn}>{so.label} ↗</a>)}
-        </div>
+      <Rise><p className="text-[15px] text-muted">A parting thought</p></Rise>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.figure
+          key={ctx.quote.text}
+          initial={{ opacity: 0, y: 10, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, y: -10, filter: 'blur(6px)' }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <blockquote className="mt-3 font-display text-[clamp(2.1rem,3.6vw,3.4rem)] leading-[1.02]">“{ctx.quote.text}”</blockquote>
+          <figcaption className="mt-4 text-lg text-muted">{ctx.quote.by}</figcaption>
+        </motion.figure>
+      </AnimatePresence>
+      <Rise i={1}>
+        <button type="button" onClick={ctx.nextQuote} className={`${btn} mt-7`}>Another thought <span aria-hidden>↻</span></button>
       </Rise>
     </Plate>
   )

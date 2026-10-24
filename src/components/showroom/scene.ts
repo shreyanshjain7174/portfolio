@@ -13,9 +13,14 @@ import { PROJECT_IMAGES, STATIONS, SUITS, VEHICLES, WATCHES } from './stations'
 
 export type SceneApi = {
   setStation: (k: number) => void
+  /** walk up to one vehicle and let the visitor turn around it; null steps back to the rail */
+  inspect: (job: string | null, shift?: { x: number; y: number }) => void
+  /** lights and a running engine's shiver for the inspected vehicle; rev is 0 to 1 */
+  setEngine: (job: string, state: 'off' | 'standby' | 'running', rev?: number) => void
   setProject: (i: number) => void
   openDoors: () => void
   setPaused: (p: boolean) => void
+  setQuote: (text: string, by: string) => void
   dispose: () => void
 }
 
@@ -27,6 +32,7 @@ type Opts = {
   onHover: (id: string | null, x: number, y: number) => void
   onSelect: (id: string) => void
   onProgress?: (done: number, total: number) => void
+  quote: { text: string; by: string }
 }
 
 const box = (w: number, h: number, d: number, m: THREE.Material) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m)
@@ -59,7 +65,7 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   const gltf = new GLTFLoader()
   gltf.setMeshoptDecoder(MeshoptDecoder)
   const v1 = new THREE.Vector3(), v2 = new THREE.Vector3()
-  type Fit = { len?: number; height?: number; tint?: number; flat?: boolean; mute?: boolean }
+  type Fit = { len?: number; height?: number; tint?: number; flat?: boolean; mute?: boolean; onReady?: (size: THREE.Vector3) => void }
   // models load one at a time in walking order (garage first), each in an idle moment,
   // so arriving never stalls the frame the visitor is looking at
   const queue: (() => Promise<void>)[] = []
@@ -92,6 +98,14 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
           const c = mat.color
           if (c && c.r * 0.3 + c.g * 0.59 + c.b * 0.11 > 0.7) mesh.material = paint
         })
+        // and bare glass the same treatment: dark and glossy rather than flat white
+        const glass = new THREE.MeshPhysicalMaterial({ color: 0x0a0c10, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.88 })
+        obj.traverse((m) => {
+          const mesh = m as THREE.Mesh
+          const mat = mesh.material as THREE.MeshStandardMaterial
+          if (!mesh.isMesh || !mat || Array.isArray(mat) || mat.map || !mat.transparent || !mat.color) return
+          if (mat.color.r * 0.3 + mat.color.g * 0.59 + mat.color.b * 0.11 > 0.6) mesh.material = glass
+        })
       }
       if (fit.mute) {
         // a tailor's dummy should disappear behind the suit: strong colours become charcoal
@@ -111,6 +125,7 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
       b.setFromObject(wrap); const c = b.getCenter(v2)
       wrap.position.set(-c.x, -b.min.y, -c.z)
       const outer = new THREE.Group(); outer.add(wrap)
+      fit.onReady?.(b.getSize(new THREE.Vector3()))
       outer.traverse((m) => {
         const mesh = m as THREE.Mesh
         if (!mesh.isMesh) return
@@ -232,13 +247,49 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     spot.position.set(lx, 4.8, -0.6); spot.target.position.set(lx, 0.3, -2.2)
     scene.add(spot, spot.target)
   }
+  // a soft round glow, shared by every head and tail lamp
+  const glowTex = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 64
+    const x = c.getContext('2d')!
+    const g = x.createRadialGradient(32, 32, 0, 32, 32, 32)
+    g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(0.25, 'rgba(255,255,255,.55)'); g.addColorStop(1, 'rgba(255,255,255,0)')
+    x.fillStyle = g; x.fillRect(0, 0, 64, 64)
+    return new THREE.CanvasTexture(c)
+  })()
+  const lampMat = (color: number) => new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0 })
+  type Vehicle = { job: string; table: THREE.Group; holder: THREE.Group; len: number; lamps: THREE.Group; head: THREE.SpriteMaterial; tail: THREE.SpriteMaterial; state: 'off' | 'standby' | 'running'; rev: number; glow: number }
+  const vehicles: Vehicle[] = []
   VEHICLES.forEach((v) => {
     const table = new THREE.Group(); table.position.set(v.x, 0, -2.2)
     table.add(plinth(v.kind === 'motorcycle' ? 1.6 : 2.25))
     const fallback = v.kind === 'motorcycle' ? motorcycle(v.color) : car(v.kind as CarKind, v.color)
     fallback.scale.setScalar(0.86)
     const holder = new THREE.Group(); holder.position.y = 0.14; holder.rotation.y = 2.25
-    slot(v.model, holder, fallback, { len: v.len * 0.86, tint: 'tint' in v ? (v as { tint: number }).tint : undefined })
+    const lamps = new THREE.Group(); holder.add(lamps)
+    const veh: Vehicle = { job: v.job, table, holder, len: v.len * 0.86, lamps, head: lampMat(0xfff2dc), tail: lampMat(0xff2a1a), state: 'off', rev: 0, glow: 0 }
+    vehicles.push(veh)
+    slot(v.model, holder, fallback, {
+      len: v.len * 0.86,
+      tint: 'tint' in v ? (v as { tint: number }).tint : undefined,
+      // set the lamps where this model's nose and tail actually are
+      onReady: (size) => {
+        const alongX = size.x >= size.z, half = (alongX ? size.x : size.z) / 2, wide = (alongX ? size.z : size.x) / 2
+        const bike = v.kind === 'motorcycle'
+        const put = (mat: THREE.SpriteMaterial, end: number, side: number, h: number, sc: number, reach = 1) => {
+          const sp = new THREE.Sprite(mat); sp.scale.setScalar(sc)
+          // just proud of the bodywork, so the glow is not swallowed by the panel behind it
+          const a = end * (half * reach + 0.05), b = side * wide * 0.7
+          sp.position.set(alongX ? a : b, size.y * h, alongX ? b : a)
+          lamps.add(sp)
+        }
+        const f = v.front
+        for (const side of bike ? [0] : [-1, 1]) {
+          // a bike's lamp sits behind its front wheel, not at the tip of it
+          put(veh.head, f, side, bike ? 0.7 : 0.42, bike ? 0.28 : 0.5, bike ? 0.56 : 1)
+          put(veh.tail, -f, side, bike ? 0.5 : 0.48, bike ? 0.22 : 0.32)
+        }
+      },
+    })
     const spinner = new THREE.Group(); spinner.add(holder); table.add(spinner)
     scene.add(table)
     const sign = placard(o.labels[v.job] ?? [v.job]); sign.position.set(v.x + 1.9, 0, 0.35); sign.rotation.y = -0.35; scene.add(sign)
@@ -344,13 +395,16 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   const wardrobeLight = new THREE.SpotLight(0xfff0dc, 48, 0, 0.95, 0.6, 2); wardrobeLight.position.set(34.2, 4.8, 1.4); wardrobeLight.target.position.set(34.0, 1.0, -2.6)
   scene.add(wardrobeLight, wardrobeLight.target)
 
-  // the watch drawer: the four pieces, set out on suede
+  // the watch drawer: the four pieces, set out on suede, shut under the glass until you walk up
+  const DRAWER_SHUT = -0.2, DRAWER_OPEN = 0.75, HELD = 0.42, HELD_OUT = 0.45
+  const lifts: { id: string; obj: THREE.Object3D; held: boolean }[] = []
+  let drawerT = 0
   const island = new THREE.Group(); island.position.set(35.7, 0, 0.45)
   const body = box(3.0, 0.9, 1.4, walnut); body.position.y = 0.45
   const top = box(3.1, 0.06, 1.5, new THREE.MeshPhysicalMaterial({ color: 0x15161a, roughness: 0.05, transmission: 0.3, transparent: true, opacity: 0.85 }))
   top.position.y = 0.93
   island.add(body, top)
-  const drawer = new THREE.Group(); drawer.position.set(0, 0.62, 0.75)
+  const drawer = new THREE.Group(); drawer.position.set(0, 0.62, DRAWER_SHUT)
   const tray = box(2.7, 0.06, 1.0, MAT.suede())
   const dFront = box(2.9, 0.38, 0.06, walnut); dFront.position.set(0, -0.02, 0.53)
   drawer.add(tray, dFront)
@@ -359,9 +413,11 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     if (i < 3) { const div = box(0.02, 0.05, 0.95, MAT.darkSteel()); div.position.set(x + 0.33, 0.05, 0); drawer.add(div) }
     const w = watch(wch.dial); clocks.push(w); w.group.scale.setScalar(0.85)
     const holder = new THREE.Group(); holder.position.set(x, 0.07, -0.05)
+    if ('yaw' in wch) holder.rotation.y = wch.yaw
     // a watch on a closed strap stands on it like a cushion; the rest lie dial-up
     slot(wch.model, holder, w.group, wch.upright ? { height: 0.42 } : { len: 0.5, flat: true })
     drawer.add(holder)
+    lifts.push({ id: `watch:${wch.label}`, obj: holder, held: false })
     interactive.push({ id: `watch:${wch.label}`, obj: holder })
   })
   island.add(drawer)
@@ -373,32 +429,55 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   const hBack = box(12, 5, 0.2, walnut); hBack.position.set(46, 2.5, -5.1); scene.add(hBack)
   const hFront = box(12, 5, 0.2, plaster); hFront.position.set(46, 2.5, 6.1); scene.add(hFront)
   const hEnd = box(0.2, 5, 11.4, walnut); hEnd.position.set(52.1, 2.5, 0.5); scene.add(hEnd)
+  const honours: THREE.Object3D[] = []
   HALL_OF_FAME.forEach((h, i) => {
     const f = honour(h.title, h.detail, h.note)
     f.position.set(41.9 + i * 1.6, 2.6, -4.95)
-    scene.add(f)
-    interactive.push({ id: 'hall', obj: f })
+    scene.add(f); honours.push(f)
+    interactive.push({ id: `hall:${i}`, obj: f })
   })
+  // the ways to reach me sit in a lit row under the honours, and lift toward you when pointed at
+  const plates: { id: string; obj: THREE.Object3D; s: number }[] = []
   SOCIALS.forEach((so, i) => {
     const p = socialPlate(so.label, so.handle)
-    p.position.set(43.6 + i * 0.95, 1.45, -4.98)
+    p.position.set(45.9 + (i - (SOCIALS.length - 1) / 2) * 1.2, 1.38, -4.96)
     scene.add(p)
+    plates.push({ id: `social:${so.label}`, obj: p, s: 1 })
     interactive.push({ id: `social:${so.label}`, obj: p })
   })
+  const hallCentre = new THREE.Vector3(45.9, 2.15, -4.95)
   const hallLight = new THREE.SpotLight(0xfff0dc, 30, 0, 0.75, 0.7, 2); hallLight.position.set(46, 4.8, -1.2); hallLight.target.position.set(46, 2.2, -5)
   scene.add(hallLight, hallLight.target)
-  // the exit banner: a long lit panel on the end wall with the way to reach me
-  {
-    const c = document.createElement('canvas'); c.width = 2000; c.height = 900
-    const x = c.getContext('2d')!
+  // the end wall: a long lit panel with one parting thought, redrawn whenever the quote changes
+  const quoteCanvas = document.createElement('canvas'); quoteCanvas.width = 2000; quoteCanvas.height = 900
+  const quoteTex = new THREE.CanvasTexture(quoteCanvas); quoteTex.colorSpace = THREE.SRGBColorSpace; quoteTex.anisotropy = 8
+  function drawQuote(text: string, by: string) {
+    const x = quoteCanvas.getContext('2d')!
     x.fillStyle = '#efe9df'; x.fillRect(0, 0, 2000, 900)
-    x.fillStyle = '#1d1b19'; x.textAlign = 'center'
-    x.font = 'italic 400 120px "Instrument Serif", Georgia, serif'; x.fillText('Thanks for walking through.', 1000, 300)
-    x.font = '400 190px "Instrument Serif", Georgia, serif'; x.fillText("Let's build something.", 1000, 520)
-    x.font = '500 46px Geist, Arial, sans-serif'; x.fillStyle = '#5a534b'
-    x.fillText('hire.ssancheti@gmail.com  ·  linkedin/shreyansh-sancheti  ·  @shrey_sancheti', 1000, 700)
-    const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8
-    const banner = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 2.97), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false, color: 0xdedede }))
+    x.textAlign = 'center'; x.fillStyle = '#1d1b19'
+    // the largest size at which the line wraps into three rows or fewer
+    let size = 170, lines: string[] = []
+    for (; size >= 80; size -= 10) {
+      x.font = `400 ${size}px "Instrument Serif", Georgia, serif`
+      lines = []
+      let row = ''
+      for (const w of `“${text}”`.split(' ')) {
+        const t = row ? `${row} ${w}` : w
+        if (x.measureText(t).width > 1760 && row) { lines.push(row); row = w } else row = t
+      }
+      lines.push(row)
+      if (lines.length <= 3) break
+    }
+    const lh = size * 1.08, top = 430 - ((lines.length - 1) * lh) / 2 - 40
+    lines.forEach((l, i) => x.fillText(l, 1000, top + i * lh))
+    x.font = 'italic 400 64px "Instrument Serif", Georgia, serif'; x.fillStyle = '#5a534b'
+    x.fillText(`— ${by}`, 1000, top + (lines.length - 1) * lh + 130)
+    quoteTex.needsUpdate = true
+    needsFrame = true
+  }
+  drawQuote(o.quote.text, o.quote.by)
+  {
+    const banner = new THREE.Mesh(new THREE.PlaneGeometry(6.6, 2.97), new THREE.MeshBasicMaterial({ map: quoteTex, toneMapped: false, color: 0xdedede }))
     banner.rotation.y = -Math.PI / 2; banner.position.set(51.98, 2.45, 0.6)
     scene.add(banner)
     interactive.push({ id: 'exit', obj: banner })
@@ -423,8 +502,116 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     look.lerpVectors(L[i], L[i + 1], f)
   }
 
+  /* ---------- inspecting one piece: the camera leaves the rail and orbits it ---------- */
+  // a vehicle on its plinth, or a watch lifted out of the drawer and held up to the light
+  type Subject = { len: number; rMin: number; rMax: number; ceiling: number; walls: boolean; fixed?: boolean; vehicle?: Vehicle; lift?: (typeof lifts)[number] }
+  let inspected: Subject | null = null, inspectT = 0
+  const orbit = { theta: 0, phi: 1.2, r: 6, vTheta: 0, vPhi: 0, idle: 0 }
+  const orbitCenter = new THREE.Vector3(), orbitPos = new THREE.Vector3()
+  const viewShift = { x: 0, y: 0 }
+  function beginInspect(id: string | null, shift?: { x: number; y: number }) {
+    if (shift) { viewShift.x = shift.x; viewShift.y = shift.y }
+    for (const l of lifts) l.held = false
+    inspected = null
+    const v = id ? vehicles.find((x) => x.job === id) : undefined
+    const l = id ? lifts.find((x) => x.id === id) : undefined
+    if (v) {
+      inspected = { len: v.len, rMin: v.len * 0.45 + 0.9, rMax: v.len * 1.25 + 1.2, ceiling: 3.6, walls: true, vehicle: v }
+      orbitCenter.set(v.table.position.x, 0.75, v.table.position.z)
+      orbit.phi = 1.18
+    } else if (l) {
+      // lift it clear of the drawer, then circle it at arm's length
+      l.held = true
+      inspected = { len: 0.5, rMin: 0.28, rMax: 1.5, ceiling: 1.2, walls: false, lift: l }
+      // it comes up and forward, clear of the glass top, and the camera aims at the dial rather than its base
+      l.obj.getWorldPosition(orbitCenter)
+      orbitCenter.y += HELD - (l.obj.position.y - 0.07) + 0.1
+      orbitCenter.z += HELD_OUT - (l.obj.position.z + 0.05)
+      orbit.phi = 0.95
+    }
+    if (id === 'hall' || id?.startsWith('hall:')) {
+      // the hall is read straight on: the whole wall first, then one honour at a time
+      const i = id === 'hall' ? -1 : Number(id.slice(5))
+      const one = honours[i]
+      // the hall is about ten metres deep: the camera can step back no further than the far wall
+      inspected = { len: one ? 1.6 : 10.2, rMin: one ? 1.1 : 3, rMax: one ? 3.2 : 10.2, ceiling: 5, walls: false, fixed: true }
+      if (one) orbitCenter.set(one.position.x, one.position.y - 0.05, one.position.z)
+      else orbitCenter.copy(hallCentre)
+      orbit.theta = 0; orbit.phi = one ? 1.52 : 1.47
+      orbit.r = fitDistance(inspected) * (one ? 1.15 : 1.05)
+      orbit.vTheta = orbit.vPhi = 0; orbit.idle = 0
+      clampOrbit()
+      needsFrame = true
+      return
+    }
+    if (!inspected) return
+    // start from where the visitor is already standing, so the move reads as walking up to it
+    orbit.theta = Math.atan2(camera.position.x - orbitCenter.x, camera.position.z - orbitCenter.z)
+    orbit.r = v ? Math.max(v.len * 0.78 + 1.6, fitDistance(inspected) * 0.95) : Math.max(0.85, fitDistance(inspected) * 1.1)
+    orbit.vTheta = orbit.vPhi = 0; orbit.idle = 0
+    needsFrame = true
+  }
+  // far enough that the whole piece fits across the screen, whatever its shape
+  const fitDistance = (sub: Subject) => {
+    const half = THREE.MathUtils.degToRad(camera.fov) / 2
+    // fit into the part of the screen the panel leaves open, not the whole width
+    const w = o.canvas.clientWidth || innerWidth, open = Math.max(240, w - 2 * viewShift.x) / w
+    const across = (sub.len * 0.5 + (sub.vehicle ? 0.5 : 0.08)) / Math.tan(Math.atan(Math.tan(half) * camera.aspect * (sub.fixed ? open : 1)))
+    // a wall is also tall: make sure it fits top to bottom as well as across
+    return sub.fixed ? Math.max(across, (sub.len > 3 ? 1.9 : 0.75) / Math.tan(half)) : across
+  }
+  const clampOrbit = () => {
+    if (!inspected) return
+    const far = inspected.fixed ? inspected.rMax : Math.max(inspected.rMax, fitDistance(inspected) * 1.25)
+    orbit.r = Math.min(far, Math.max(inspected.rMin, orbit.r))
+    // stay under the ceiling and above the floor
+    const maxUp = Math.acos(Math.min(1, inspected.ceiling / orbit.r))
+    orbit.phi = Math.min(1.5, Math.max(Math.max(0.3, maxUp), orbit.phi))
+  }
+  const drag = { on: false, x: 0, y: 0, moved: 0, pts: new Map<number, { x: number; y: number }>(), pinch: 0 }
+  const onDown = (e: PointerEvent) => {
+    if (!inspected || inspected.fixed) return
+    drag.pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    drag.on = true; drag.x = e.clientX; drag.y = e.clientY; drag.moved = 0
+    if (drag.pts.size === 2) { const [a, b] = [...drag.pts.values()]; drag.pinch = Math.hypot(a.x - b.x, a.y - b.y) }
+    o.canvas.setPointerCapture(e.pointerId)
+  }
+  const onDrag = (e: PointerEvent) => {
+    if (!inspected || !drag.on) return
+    if (drag.pts.has(e.pointerId)) drag.pts.set(e.pointerId, { x: e.clientX, y: e.clientY })
+    if (drag.pts.size === 2) {
+      const [a, b] = [...drag.pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y)
+      if (drag.pinch) orbit.r *= drag.pinch / d
+      drag.pinch = d; clampOrbit(); orbit.idle = 0; needsFrame = true
+      return
+    }
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y
+    drag.x = e.clientX; drag.y = e.clientY; drag.moved += Math.abs(dx) + Math.abs(dy)
+    orbit.vTheta = -dx * 0.0065; orbit.vPhi = -dy * 0.005
+    orbit.theta += orbit.vTheta; orbit.phi += orbit.vPhi
+    clampOrbit(); orbit.idle = 0; needsFrame = true
+  }
+  const onUp = (e: PointerEvent) => {
+    drag.pts.delete(e.pointerId)
+    if (drag.pts.size === 0) drag.on = false
+    drag.pinch = 0
+  }
+  const onWheel = (e: WheelEvent) => {
+    if (!inspected) return
+    e.preventDefault()
+    orbit.r *= 1 + Math.max(-0.2, Math.min(0.2, e.deltaY * 0.0015))
+    clampOrbit(); orbit.idle = 0; needsFrame = true
+  }
+  o.canvas.addEventListener('pointerdown', onDown)
+  o.canvas.addEventListener('pointermove', onDrag)
+  o.canvas.addEventListener('pointerup', onUp)
+  o.canvas.addEventListener('pointercancel', onUp)
+  o.canvas.addEventListener('wheel', onWheel, { passive: false })
+
   /* ---------- hover and select ---------- */
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2()
+  // only solid surfaces count: some models carry outline layers that three.js would hit from a metre away
+  ray.params.Line = { threshold: 0 }; ray.params.Points = { threshold: 0 }
   let hovered: string | null = null
   const pick = (cx: number, cy: number) => {
     const r = o.canvas.getBoundingClientRect()
@@ -432,18 +619,22 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     ray.setFromCamera(ndc, camera)
     let best: { id: string; d: number } | null = null
     for (const it of interactive) {
-      const hit = ray.intersectObject(it.obj, true)[0]
+      const hit = ray.intersectObject(it.obj, true).find((h) => (h.object as THREE.Mesh).isMesh && !(h.object as THREE.Mesh & { isLine?: boolean }).isLine)
       if (hit && (!best || hit.distance < best.d)) best = { id: it.id, d: hit.distance }
     }
     return best?.id ?? null
   }
   const onMove = (e: PointerEvent) => {
     mouse.set(e.clientX / innerWidth - 0.5, e.clientY / innerHeight - 0.5)
+    if (inspected && !inspected.fixed) { if (hovered) { hovered = null; o.onHover(null, e.clientX, e.clientY) } return }
     const id = pick(e.clientX, e.clientY)
     if (id !== hovered) { hovered = id; o.canvas.style.cursor = id ? 'pointer' : '' }
     o.onHover(id, e.clientX, e.clientY)
   }
-  const onClick = (e: MouseEvent) => { const id = pick(e.clientX, e.clientY); if (id) o.onSelect(id) }
+  const onClick = (e: MouseEvent) => {
+    if (inspected && !inspected.fixed) return
+    const id = pick(e.clientX, e.clientY); if (id) o.onSelect(id)
+  }
   o.canvas.addEventListener('pointermove', onMove)
   o.canvas.addEventListener('click', onClick)
 
@@ -469,6 +660,7 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   }
   const lastCam = new THREE.Vector3(), lastLook = new THREE.Vector3()
   let quietFor = 0
+  const watchesAt = STATIONS.findIndex((st) => st.id === 'watches')
   const clocksNear = () => current > STATIONS.findIndex((st) => st.id === 'wardrobe') - 0.8 && current < STATIONS.findIndex((st) => st.id === 'watches') + 0.8
 
   const tick = () => {
@@ -479,8 +671,77 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     railAt(current)
     sway.x += (mouse.x - sway.x) * 0.03; sway.y += (mouse.y - sway.y) * 0.03
     camera.position.set(pos.x + sway.x * 0.35, pos.y - sway.y * 0.2, pos.z)
-    lookNow.lerp(look, Math.min(1, dt * 4))
+    // walking up to a vehicle: blend from the rail into an orbit around it
+    const wantInspect = inspected ? 1 : 0
+    if (inspectT !== wantInspect) inspectT = o.reduce ? wantInspect : Math.abs(inspectT - wantInspect) < 1e-3 ? wantInspect : inspectT + (wantInspect - inspectT) * Math.min(1, dt * 2.4)
+    if (inspectT > 0) {
+      if (inspected && !drag.on && !inspected.fixed) {
+        // a little momentum after a flick, then a slow turntable drift once left alone
+        orbit.theta += orbit.vTheta; orbit.phi += orbit.vPhi
+        orbit.vTheta *= 0.92; orbit.vPhi *= 0.88
+        orbit.idle += dt
+        if (orbit.idle > 3 && !o.reduce && !paused) orbit.theta += dt * 0.12
+        clampOrbit()
+      }
+      const sp = Math.sin(orbit.phi)
+      orbitPos.set(orbitCenter.x + orbit.r * sp * Math.sin(orbit.theta), orbitCenter.y + orbit.r * Math.cos(orbit.phi), orbitCenter.z + orbit.r * sp * Math.cos(orbit.theta))
+      // never through a wall: the garage runs x -12..12, z -8..6
+      if (inspected?.walls) { orbitPos.x = Math.min(11.7, Math.max(-11.7, orbitPos.x)); orbitPos.z = Math.min(5.6, Math.max(-7.7, orbitPos.z)) }
+      const e = inspectT * inspectT * (3 - 2 * inspectT)
+      camera.position.lerp(orbitPos, e)
+      look.lerp(orbitCenter, e)
+    }
+    lookNow.lerp(look, Math.min(1, dt * (inspectT > 0 ? 8 : 4)))
     camera.lookAt(lookNow)
+    if (inspectT > 0 || camera.view) {
+      const w = o.canvas.clientWidth, h = o.canvas.clientHeight, e = inspectT * inspectT * (3 - 2 * inspectT)
+      if (inspectT > 0) camera.setViewOffset(w, h, viewShift.x * e, viewShift.y * e, w, h)
+      else camera.clearViewOffset()
+    }
+    // neighbours step out of the way while one vehicle has the floor
+    for (const v of vehicles) v.table.visible = !(inspected?.vehicle && inspected.vehicle !== v && inspectT > 0.55)
+    // lamps fade up on standby; a running engine shivers on its springs and harder on a rev
+    let engineBusy = false
+    for (const v of vehicles) {
+      const want = v.state === 'off' ? 0 : 1
+      if (Math.abs(v.glow - want) > 1e-3) { v.glow += (want - v.glow) * Math.min(1, dt * 5); engineBusy = true }
+      v.head.opacity = v.glow * 0.95; v.tail.opacity = v.glow * (0.55 + v.rev * 0.3)
+      if (v.state === 'running') {
+        const t = clock.elapsedTime, amp = 0.0025 + v.rev * 0.006
+        v.holder.position.y = 0.14 + Math.sin(t * 61) * amp * 0.5 + Math.sin(t * 23) * amp * 0.5
+        v.holder.rotation.z = Math.sin(t * 37) * amp * 0.6 + v.rev * 0.012
+        engineBusy = true
+      } else if (v.holder.position.y !== 0.14) { v.holder.position.y = 0.14; v.holder.rotation.z = 0; engineBusy = true }
+    }
+    // the drawer slides out as the camera arrives at it and back in when it leaves
+    const wantOpen = Math.abs(current - watchesAt) < 0.7 ? 1 : 0
+    let drawerBusy = false
+    if (Math.abs(drawerT - wantOpen) > 1e-3) {
+      drawerT = o.reduce ? wantOpen : drawerT + (wantOpen - drawerT) * Math.min(1, dt * 3)
+      const e = 1 - Math.pow(1 - drawerT, 3)
+      drawer.position.z = DRAWER_SHUT + (DRAWER_OPEN - DRAWER_SHUT) * e
+      drawerBusy = true
+    }
+    // a social plate under the pointer comes off the wall a little
+    for (const p of plates) {
+      const want = hovered === p.id ? 1.12 : 1
+      if (Math.abs(p.s - want) < 1e-3) continue
+      p.s += (want - p.s) * (o.reduce ? 1 : Math.min(1, dt * 8))
+      p.obj.scale.setScalar(p.s); p.obj.position.z = -4.96 + (p.s - 1) * 0.6
+      drawerBusy = true
+    }
+    // the watch under the pointer rises off the suede and tips toward you; a held one comes right out
+    for (const l of lifts) {
+      const y = l.held ? 0.07 + HELD : hovered === l.id ? 0.16 : 0.07
+      const z = l.held ? -0.05 + HELD_OUT : -0.05
+      const rx = l.held ? 0 : hovered === l.id ? 0.35 : 0
+      if (Math.abs(l.obj.position.y - y) < 1e-4 && Math.abs(l.obj.position.z - z) < 1e-4 && Math.abs(l.obj.rotation.x - rx) < 1e-4) continue
+      const k = o.reduce ? 1 : Math.min(1, dt * 6)
+      l.obj.position.y += (y - l.obj.position.y) * k
+      l.obj.position.z += (z - l.obj.position.z) * k
+      l.obj.rotation.x += (rx - l.obj.rotation.x) * k
+      drawerBusy = true
+    }
     if (projectFade < 1) { projectFade = Math.min(1, projectFade + dt * 2.2); lbA.opacity = projectFade; lbB.opacity = 1 - projectFade }
     if (doorsOpen && doorT < 1) {
       doorT = o.reduce ? 1 : Math.min(1, doorT + dt * 0.6)
@@ -493,7 +754,7 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     if (!paused) for (const c of clocks) { c.second.rotation.y = -(s / 60) * Math.PI * 2; c.minute.rotation.y = -(m / 60) * Math.PI * 2; c.hour.rotation.y = -(h / 12) * Math.PI * 2 }
     // draw only when something on screen changed; a still room costs nothing
     const moving = camera.position.distanceToSquared(lastCam) > 1e-7 || lookNow.distanceToSquared(lastLook) > 1e-7
-    const busy = moving || projectFade < 1 || (doorsOpen && doorT < 1) || needsFrame || (clocksNear() && !paused)
+    const busy = moving || engineBusy || (inspectT > 0 && inspectT < 1) || drawerBusy || projectFade < 1 || (doorsOpen && doorT < 1) || needsFrame || (clocksNear() && !paused)
     quietFor = busy ? 0 : quietFor + dt
     if (busy || quietFor < 0.25) {
       renderer.render(scene, camera)
@@ -514,12 +775,21 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   return {
     setStation: (k) => { target = Math.max(0, Math.min(STATIONS.length - 1, k)) },
     setProject,
+    inspect: beginInspect,
+    setEngine: (job, state, rev = 0) => {
+      const v = vehicles.find((x) => x.job === job)
+      if (v) { v.state = state; v.rev = rev; needsFrame = true }
+    },
     openDoors: () => { doorsOpen = true },
     setPaused: (p) => { paused = p },
+    setQuote: drawQuote,
     dispose: () => {
       running = false; cancelAnimationFrame(raf); ro.disconnect()
       document.removeEventListener('visibilitychange', onVis)
       o.canvas.removeEventListener('pointermove', onMove); o.canvas.removeEventListener('click', onClick)
+      o.canvas.removeEventListener('pointerdown', onDown); o.canvas.removeEventListener('pointermove', onDrag)
+      o.canvas.removeEventListener('pointerup', onUp); o.canvas.removeEventListener('pointercancel', onUp)
+      o.canvas.removeEventListener('wheel', onWheel)
       renderer.dispose(); pmrem.dispose()
     },
   }

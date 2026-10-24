@@ -28,16 +28,15 @@ export const ROOMS = [
   { id: 'skills', label: 'Workshop' },
   { id: 'wardrobe', label: 'Wardrobe' },
   { id: 'hall', label: 'Hall of fame' },
-  { id: 'exit', label: 'Reach out' },
 ] as const
 
 /** The career, oldest to newest. `model` is the file in /public/models once it exists. */
 export const VEHICLES = [
-  { job: 'redhat', kind: 'cruiser', model: 'bel-air-1957', len: 5.0, color: 0xa9d8c6, x: -9, era: '1957 Bel Air', note: 'Where it started.' },
-  { job: 'ibm', kind: 'coupe', model: 'impala-1967', len: 5.3, color: 0x7a0f17, x: -4.5, era: '1967 Impala', note: 'Built to go the distance.' },
-  { job: 'arista', kind: 'roadster', model: 'mustang-roush-2019', len: 4.8, tint: 0x16233f, color: 0x14213d, x: 0, era: '2019 Mustang Roush', note: 'Light, fast, precise.' },
-  { job: 'xbattery', kind: 'motorcycle', model: 'cb750-1970', len: 2.15, color: 0x2f3b2a, x: 4.5, era: '1970 café motorcycle', note: 'The side road, ridden at the same time.' },
-  { job: 'microsoft', kind: 'saloon', model: 'spectre-2026', len: 5.45, color: 0x0d0d0f, x: 9, era: '2026 Rolls-Royce Spectre', note: 'The flagship.' },
+  { job: 'redhat', kind: 'cruiser', model: 'bel-air-1957', len: 5.0, front: 1, color: 0xa9d8c6, x: -9, era: '1957 Bel Air', note: 'Where it started.' },
+  { job: 'ibm', kind: 'coupe', model: 'impala-1967', len: 5.3, front: 1, color: 0x7a0f17, x: -4.5, era: '1967 Impala', note: 'Built to go the distance.' },
+  { job: 'arista', kind: 'roadster', model: 'mustang-roush-2019', len: 4.8, front: 1, tint: 0x16233f, color: 0x14213d, x: 0, era: '2019 Mustang Roush', note: 'Light, fast, precise.' },
+  { job: 'xbattery', kind: 'motorcycle', model: 'cb750-1970', len: 2.15, front: 1, color: 0x2f3b2a, x: 4.5, era: '1970 café motorcycle', note: 'The side road, ridden at the same time.' },
+  { job: 'microsoft', kind: 'saloon', model: 'spectre-2026', len: 5.45, front: 1, color: 0x0d0d0f, x: 9, era: '2026 Rolls-Royce Spectre', note: 'The flagship.' },
 ] as const
 
 /** Images on the workshop lightbox, one per project, in /public/images/projects. */
@@ -55,7 +54,7 @@ export const WATCHES = [
   { model: 'watch-patek', label: 'Patek Philippe', dial: 0x15171a, upright: true },
   { model: 'watch-rolex', label: 'Rolex Datejust', dial: 0x1f2c44, upright: false },
   { model: 'watch-omega', label: 'Omega Seamaster 300', dial: 0x3a2418, upright: false },
-  { model: 'watch-seiko', label: 'Seiko', dial: 0x2a3b3a, upright: false },
+  { model: 'watch-seiko', label: 'Seiko', dial: 0x2a3b3a, upright: true, yaw: -Math.PI / 2 },
 ] as const
 
 /** Tailoring on display in the wardrobe. */

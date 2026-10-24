@@ -2,8 +2,11 @@
 
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { JOBS, PROJECTS, SOCIALS } from '@/content/content'
+import { HALL_OF_FAME, JOBS, PROJECTS, SOCIALS } from '@/content/content'
+import { QUOTES, nextQuote, type Quote } from '@/content/quotes'
 import type { RepoLive } from '@/lib/github'
+import { Cursor } from './Cursor'
+import { Inspect } from './Inspect'
 import { Loader } from './Loader'
 import { AVAILABLE_MODELS } from './modelManifest'
 import { placardFor } from './Placards'
@@ -34,13 +37,13 @@ function softwareGL() {
 }
 
 function hoverLabel(id: string) {
-  if (id.startsWith('watch:')) return id.slice(6)
+  if (id.startsWith('watch:')) return `${id.slice(6)} · pick it up`
   if (id === 'projects') return 'Next project'
   if (id === 'hobbies') return 'Off the clock'
-  if (id === 'exit') return 'Reach out'
+  if (id === 'exit') return 'Another thought'
   if (id.startsWith('social:')) return `Open ${id.slice(7)} ↗`
-  if (id === 'hall') return 'Hall of fame'
-  const j = JOBS.find((x) => x.id === id); if (j) return `${j.company} · ${VEHICLES.find((v) => v.job === id)?.era}`
+  if (id.startsWith('hall:')) return `${HALL_OF_FAME[Number(id.slice(5))]?.title} · look closer`
+  const v = VEHICLES.find((x) => x.job === id); if (v) return `${v.era} · look closer`
   const p = PROJECTS.find((x) => x.id === id); if (p) return p.name
   if (id === 'lounge') return 'The lounge'
   return null
@@ -63,7 +66,26 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
     api.current?.setProject(i)
   }, [])
   const [paused, setPaused] = useState(false)
-  const [hover, setHover] = useState<{ label: string; x: number; y: number } | null>(null)
+  const [hover, setHover] = useState<string | null>(null)
+  const [inspecting, setInspecting] = useState<string | null>(null)
+  // the server renders the first quote; the visitor's browser picks its own once it is running
+  const [quote, setQuote] = useState<Quote>(QUOTES[0])
+  const quoteRef = useRef(quote)
+  const changeQuote = useCallback(() => {
+    const q = nextQuote(quoteRef.current)
+    quoteRef.current = q; setQuote(q)
+    api.current?.setQuote(q.text, q.by)
+  }, [])
+  useEffect(() => { changeQuote() }, [changeQuote])
+  const inspectingRef = useRef<string | null>(null)
+  const inspect = useCallback((job: string | null) => {
+    inspectingRef.current = job
+    setInspecting(job)
+    // the panel sits right on a wide screen and along the bottom on a phone: keep the car in the open part
+    const wide = innerWidth >= 768
+    api.current?.inspect(job, wide ? { x: 230, y: 0 } : { x: 0, y: Math.round(innerHeight * 0.2) })
+    setHover(null)
+  }, [])
   const lenis = useRef<{ scrollTo: (t: HTMLElement | number, o?: object) => void; stop: () => void; start: () => void } | null>(null)
 
   const go = useCallback((id: string) => {
@@ -92,16 +114,21 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
         small,
         reduce: !!reduce,
         labels: labelsForPlaques(),
-        onHover: (id, x, y) => { const l = id ? hoverLabel(id) : null; setHover(l ? { label: l, x, y } : null) },
+        onHover: (id) => setHover(id ? hoverLabel(id) : null),
         onProgress: (done, total) => setPieces({ done, total }),
+        quote: quoteRef.current,
         onSelect: (id) => {
+          if (VEHICLES.some((v) => v.job === id) || id.startsWith('watch:')) return inspect(id)
+          // the hall opens on the whole wall; once there, a click goes to that honour
+          if (id.startsWith('hall:')) return inspect(inspectingRef.current?.startsWith('hall') ? id : 'hall')
+          if (id === 'exit') return changeQuote()
           if (id === 'projects') setProject((projectRef.current + 1) % PROJECTS.length)
           go(id)
         },
       })
       setReady(true)
     })
-  }, [reduce, go, setProject])
+  }, [reduce, go, setProject, inspect, changeQuote])
 
   // start building as soon as the page has painted and the browser is idle, or at the first
   // sign of a visitor, whichever comes first: by the time they press Enter the room is ready
@@ -134,10 +161,12 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
     return () => { cancelAnimationFrame(raf); instance?.destroy(); lenis.current = null }
   }, [reduce])
 
+  // the page holds still while a vehicle is being looked at
   useEffect(() => {
-    document.documentElement.style.overflow = entered ? '' : 'hidden'
-    if (entered) lenis.current?.start()
-  }, [entered])
+    const hold = !entered || !!inspecting
+    document.documentElement.style.overflow = hold ? 'hidden' : ''
+    if (hold) lenis.current?.stop(); else lenis.current?.start()
+  }, [entered, inspecting])
 
   // scroll position becomes a place on the camera rail
   useEffect(() => {
@@ -155,7 +184,7 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
       api.current?.setStation(k)
       setActive(Math.round(k))
     }
-    const onScroll = () => { setHover(null); if (!raf) raf = requestAnimationFrame(update) }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
     addEventListener('scroll', onScroll, { passive: true })
     update()
     return () => removeEventListener('scroll', onScroll)
@@ -171,6 +200,14 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
     const t = setTimeout(() => go('garage'), reduce ? 0 : 1300)
     return () => clearTimeout(t)
   }, [pressed, ready, entered, go, reduce])
+
+  // standing at the end wall, the thought changes on its own every so often
+  const atExit = STATIONS[active]?.id === 'exit'
+  useEffect(() => {
+    if (!atExit || reduce || paused) return
+    const t = setInterval(changeQuote, 16000)
+    return () => clearInterval(t)
+  }, [atExit, reduce, paused, changeQuote])
 
   const room = STATIONS[active]?.room ?? 'entrance'
 
@@ -195,23 +232,20 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
         </div>
       </header>
 
+      <Cursor label={hover} mode={inspecting && !inspecting.startsWith('hall') ? 'drag' : null} />
       <AnimatePresence>
-        {hover ? (
-          <motion.p
-            key="tip"
-            className="pointer-events-none fixed z-40 bg-ink px-3 py-1.5 text-sm text-ground"
-            style={{ left: hover.x + 16, top: hover.y + 12 }}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-          >
-            {hover.label}
-          </motion.p>
+        {inspecting ? (
+          <Inspect
+            key={inspecting.startsWith('watch:') ? 'watch' : inspecting.startsWith('hall') ? 'hall' : inspecting}
+            job={inspecting}
+            onPick={inspect}
+            onClose={() => inspect(null)}
+            onEngine={(state, rev) => api.current?.setEngine(inspecting, state, rev)}
+          />
         ) : null}
       </AnimatePresence>
 
-      <main className="pointer-events-none relative z-10">
+      <main className={`pointer-events-none relative z-10 transition-opacity duration-500 ${inspecting ? 'opacity-0 [&_*]:!pointer-events-none' : ''}`} aria-hidden={inspecting ? true : undefined}>
         {STATIONS.map((s, i) => (
           <section
             key={s.id}
@@ -221,7 +255,7 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
             className="relative min-h-[125svh] px-4 sm:px-8"
           >
             <div className="sticky top-0 flex h-[100svh] items-end pb-6 pt-24 sm:pb-10 md:items-end">
-              {placardFor(s.id, { project, setProject, live })}
+              {placardFor(s.id, { project, setProject, live, inspect, quote, nextQuote: changeQuote })}
             </div>
           </section>
         ))}

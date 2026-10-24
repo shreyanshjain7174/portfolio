@@ -557,10 +557,13 @@ export function honour(title: string, detail: string, note: string) {
 export function socialPlate(label: string, handle: string) {
   const c = document.createElement('canvas'); c.width = 600; c.height = 200
   const x = c.getContext('2d')!
-  x.fillStyle = '#9fa3a8'; x.fillRect(0, 0, 600, 200)
-  x.fillStyle = '#1d1e20'; x.textAlign = 'center'
-  x.font = '400 64px "Instrument Serif", Georgia, serif'; x.fillText(label, 300, 92)
-  x.font = '400 30px Geist, Arial, sans-serif'; x.fillText(handle, 300, 150)
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace
-  return new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.25, 0.02), [MAT.darkSteel(), MAT.darkSteel(), MAT.darkSteel(), MAT.darkSteel(), new THREE.MeshStandardMaterial({ map: tex, metalness: 0.7, roughness: 0.3 }), MAT.darkSteel()])
+  x.fillStyle = '#efe9df'; x.fillRect(0, 0, 600, 200)
+  x.strokeStyle = '#2a2622'; x.lineWidth = 3; x.strokeRect(14, 14, 572, 172)
+  x.fillStyle = '#1d1b19'; x.textAlign = 'center'
+  x.font = '400 70px "Instrument Serif", Georgia, serif'; x.fillText(`${label} ↗`, 300, 98)
+  x.fillStyle = '#5a534b'; x.font = '500 30px Geist, Arial, sans-serif'; x.fillText(handle, 300, 152)
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4
+  // lit from within like the honours above it, so the way to reach me reads from across the room
+  const face = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.55, roughness: 0.5 })
+  return new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.33, 0.03), [MAT.darkSteel(), MAT.darkSteel(), MAT.darkSteel(), MAT.darkSteel(), face, MAT.darkSteel()])
 }
