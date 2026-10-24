@@ -1,0 +1,53 @@
+{
+  "_readme": "Real models for the showroom. Each slot: drop <slot>.glb in models-src/ (or set SKETCHFAB_TOKEN to fetch), then run `npm run models`. All CC Attribution; credits are shown in the site footer.",
+  "bel-air-1957": {
+    "uid": "8437671af0374b12b2e7fd9478d13b85",
+    "title": "1957 Chevrolet Bel Air",
+    "author": "DisneyCars"
+  },
+  "impala-1967": {
+    "uid": "bce35ef0c10d41fdb3f7d8c4225144d2",
+    "title": "Chevrolet Impala 1967",
+    "author": "Eques_inferno"
+  },
+  "mustang-roush-2019": {
+    "uid": "c3be292e50774be98bac9de749579d80",
+    "title": "Ford Mustang ROUSH 2019 - Stage 3",
+    "author": "_the.render.box_"
+  },
+  "cb750-1970": {
+    "uid": "f121301624174b179ca4d50158797b03",
+    "title": "Honda CB 750 F Super Sport 1970",
+    "author": "ALEX. KA."
+  },
+  "spectre-2026": {
+    "uid": "99fcb692e396433b96ead8b0b0ebc71f",
+    "title": "2026 Rolls-Royce Spectre",
+    "author": "tonielpro520"
+  },
+  "watch-patek": {
+    "uid": "511b5eae61994ef69550bdd1ac0231d3",
+    "title": "Patek Philippe",
+    "author": "viola55477"
+  },
+  "watch-rolex": {
+    "uid": "9ad3e4c91e91405d9fc526c8ef496d0e",
+    "title": "Rolex Datejust",
+    "author": "Yevhen Artamonov"
+  },
+  "watch-omega": {
+    "uid": "1412158447e84492943020ef817e63ca",
+    "title": "OMEGA Seamaster 300 Watch",
+    "author": "Rowen Halpern"
+  },
+  "watch-seiko": {
+    "uid": "0796e23ab5c0448c9bdf3fe5c3b3e362",
+    "title": "Seiko Watch",
+    "author": "carloshisserich"
+  },
+  "suit": {
+    "uid": "07aa112ed4be43f8ace4e1b0cb30e2f5",
+    "title": "Mannequin With Suit",
+    "author": "kg007"
+  }
+}

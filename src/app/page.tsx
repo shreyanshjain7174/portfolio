@@ -1,5 +1,5 @@
-import Portfolio from '@/components/Portfolio'
+import { Showroom } from '@/components/showroom/Showroom'
 
 export default function Home() {
-  return <Portfolio />
+  return <Showroom />
 }
