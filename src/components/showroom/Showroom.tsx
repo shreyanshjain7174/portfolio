@@ -20,6 +20,19 @@ function labelsForPlaques() {
   return out
 }
 
+function softwareGL() {
+  try {
+    const gl = document.createElement('canvas').getContext('webgl')
+    if (!gl) return true
+    const ext = gl.getExtension('WEBGL_debug_renderer_info')
+    const name = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)) : ''
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
+    return /swiftshader|llvmpipe|software/i.test(name)
+  } catch {
+    return true
+  }
+}
+
 function hoverLabel(id: string) {
   if (id.startsWith('watch:')) return id.slice(6)
   if (id === 'projects') return 'Next project'
@@ -97,8 +110,11 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
     const once = () => { build(); evs.forEach((e) => removeEventListener(e, once)) }
     evs.forEach((e) => addEventListener(e, once, { passive: true }))
     const soon = () => ('requestIdleCallback' in window ? requestIdleCallback(once, { timeout: 2500 }) : setTimeout(once, 1200))
-    if (document.readyState === 'complete') soon()
-    else addEventListener('load', soon, { once: true })
+    // without a real GPU, shader compiles take seconds: wait for the visitor instead of building unasked
+    if (!softwareGL()) {
+      if (document.readyState === 'complete') soon()
+      else addEventListener('load', soon, { once: true })
+    }
     return () => { evs.forEach((e) => removeEventListener(e, once)); api.current?.dispose(); api.current = null }
   }, [build])
 
