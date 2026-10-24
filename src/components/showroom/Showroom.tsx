@@ -155,7 +155,7 @@ export function Showroom() {
       <Loader ready={ready} onEnter={enter} />
 
       <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-6 px-5 py-4 sm:px-8">
-        <a href="#entrance" onClick={(e) => { e.preventDefault(); go('entrance') }} className="font-display text-2xl leading-none">S. Sancheti</a>
+        <a href="#entrance" onClick={(e) => { e.preventDefault(); go('entrance') }} aria-label="Shreyansh Sancheti, back to the entrance" className="font-display text-2xl leading-none">S2</a>
         <nav aria-label="Rooms" className="hidden items-center gap-7 text-[15px] md:flex">
           {ROOMS.map((r) => (
             <a key={r.id} href={`#${r.id}`} onClick={(e) => { e.preventDefault(); go(r.id) }} className={`relative py-1 transition-colors ${room === r.id ? 'text-ink' : 'text-muted hover:text-ink'}`}>
