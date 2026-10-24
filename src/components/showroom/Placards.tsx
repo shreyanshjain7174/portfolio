@@ -4,6 +4,7 @@ import { animate, motion, useInView, useReducedMotion } from 'framer-motion'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { EDUCATION, HALL_OF_FAME, HIGHLIGHT_SKILLS, HOBBIES, JOBS, OPEN_SOURCE, PERSON, PROJECTS, SKILL_RACKS, SOCIALS, STAGES, TALK } from '@/content/content'
+import type { RepoLive } from '@/lib/github'
 import { PROJECT_IMAGES, VEHICLES, WATCHES } from './stations'
 
 /* Words rise out of a mask, one after another (adapted from the 21st.dev "Text Reveal (Mask)" pattern). */
@@ -94,6 +95,13 @@ function ProjectShowcase({ ctx }: { ctx: PlacardCtx }) {
             </div>
           ) : null}
           <p className="mt-3 text-[15px] text-muted">{p.stack.join(' · ')}</p>
+          {ctx.live[p.id] ? (
+            <p className="tnum mt-2 text-[15px]">
+              <span>★ {ctx.live[p.id].stars}</span>
+              <span className="text-muted"> · updated {ago(ctx.live[p.id].pushedAt)}</span>
+              {ctx.live[p.id].lastCommit ? <span className="block text-muted">Latest: {ctx.live[p.id].lastCommit}</span> : null}
+            </p>
+          ) : null}
         </motion.div>
       </AnimatePresence>
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -109,7 +117,12 @@ function ProjectShowcase({ ctx }: { ctx: PlacardCtx }) {
 
 const btn = 'inline-flex items-center gap-2 border border-ink/30 px-4 py-2.5 text-[15px] transition-colors duration-300 hover:bg-ink hover:text-ground'
 
-export type PlacardCtx = { project: number; setProject: (i: number) => void }
+export type PlacardCtx = { project: number; setProject: (i: number) => void; live: Record<string, RepoLive> }
+
+function ago(iso: string) {
+  const d = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86400000))
+  return d === 0 ? 'today' : d === 1 ? 'yesterday' : d < 30 ? `${d} days ago` : d < 365 ? `${Math.round(d / 30)} months ago` : `${Math.round(d / 365)} years ago`
+}
 
 export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
   if (id === 'entrance') return (
@@ -202,13 +215,16 @@ export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
       <MaskText text="Hall of fame" className="font-display text-[clamp(2.5rem,4.5vw,4rem)] leading-[0.95]" />
       <Rise i={1}>
         <ul className="mt-6 grid gap-x-8 gap-y-4 sm:grid-cols-2">
-          {HALL_OF_FAME.map((h) => (
+          {HALL_OF_FAME.map((h0) => {
+            const stars = ctx.live['agentic-operator']?.stars
+            const h = h0.detail === 'agentic-operator-core' && stars ? { ...h0, title: `${stars} stars` } : h0
+            return (
             <li key={h.title}>
               {h.url ? <a href={h.url} target="_blank" rel="noreferrer" className="font-display text-2xl leading-tight hover:text-warm">{h.title}</a> : <span className="font-display text-2xl leading-tight">{h.title}</span>}
               <p className="text-[15px]">{h.detail}</p>
               <p className="text-[15px] text-muted">{h.note}</p>
             </li>
-          ))}
+          ) })}
         </ul>
       </Rise>
       <Rise i={2}>

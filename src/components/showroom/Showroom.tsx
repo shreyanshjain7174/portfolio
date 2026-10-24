@@ -3,6 +3,7 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { JOBS, PROJECTS, SOCIALS } from '@/content/content'
+import type { RepoLive } from '@/lib/github'
 import { Loader } from './Loader'
 import { AVAILABLE_MODELS } from './modelManifest'
 import { placardFor } from './Placards'
@@ -32,7 +33,7 @@ function hoverLabel(id: string) {
   return null
 }
 
-export function Showroom() {
+export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const api = useRef<SceneApi | null>(null)
   const sections = useRef<HTMLElement[]>([])
@@ -41,6 +42,7 @@ export function Showroom() {
   const [entered, setEntered] = useState(false)
   const [active, setActive] = useState(0)
   const [project, setProjectState] = useState(0)
+  const [pieces, setPieces] = useState<{ done: number; total: number } | null>(null)
   const projectRef = useRef(0)
   const setProject = useCallback((i: number) => {
     projectRef.current = i
@@ -78,6 +80,7 @@ export function Showroom() {
         reduce: !!reduce,
         labels: labelsForPlaques(),
         onHover: (id, x, y) => { const l = id ? hoverLabel(id) : null; setHover(l ? { label: l, x, y } : null) },
+        onProgress: (done, total) => setPieces({ done, total }),
         onSelect: (id) => {
           if (id === 'projects') setProject((projectRef.current + 1) % PROJECTS.length)
           go(id)
@@ -87,10 +90,15 @@ export function Showroom() {
     })
   }, [reduce, go, setProject])
 
+  // start building as soon as the page has painted and the browser is idle, or at the first
+  // sign of a visitor, whichever comes first: by the time they press Enter the room is ready
   useEffect(() => {
     const evs = ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart'] as const
     const once = () => { build(); evs.forEach((e) => removeEventListener(e, once)) }
     evs.forEach((e) => addEventListener(e, once, { passive: true }))
+    const soon = () => ('requestIdleCallback' in window ? requestIdleCallback(once, { timeout: 2500 }) : setTimeout(once, 1200))
+    if (document.readyState === 'complete') soon()
+    else addEventListener('load', soon, { once: true })
     return () => { evs.forEach((e) => removeEventListener(e, once)); api.current?.dispose(); api.current = null }
   }, [build])
 
@@ -152,7 +160,7 @@ export function Showroom() {
   return (
     <>
       <canvas ref={canvas} className="fixed inset-0 h-[100svh] w-screen" aria-hidden />
-      <Loader ready={ready} onEnter={enter} />
+      <Loader ready={ready} onEnter={enter} pieces={pieces} />
 
       <header className="fixed inset-x-0 top-0 z-30 flex items-center justify-between gap-6 px-5 py-4 sm:px-8">
         <a href="#entrance" onClick={(e) => { e.preventDefault(); go('entrance') }} aria-label="Shreyansh Sancheti, back to the entrance" className="font-display text-2xl leading-none">S2</a>
@@ -196,7 +204,7 @@ export function Showroom() {
             className="relative min-h-[125svh] px-4 sm:px-8"
           >
             <div className="sticky top-0 flex h-[100svh] items-end pb-6 pt-24 sm:pb-10 md:items-end">
-              {placardFor(s.id, { project, setProject })}
+              {placardFor(s.id, { project, setProject, live })}
             </div>
           </section>
         ))}

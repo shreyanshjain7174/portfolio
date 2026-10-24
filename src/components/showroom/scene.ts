@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { Reflector } from 'three/examples/jsm/objects/Reflector.js'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
@@ -27,19 +26,22 @@ type Opts = {
   labels: Record<string, string[]>
   onHover: (id: string | null, x: number, y: number) => void
   onSelect: (id: string) => void
+  onProgress?: (done: number, total: number) => void
 }
 
 const box = (w: number, h: number, d: number, m: THREE.Material) => new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m)
 
 export async function createShowroom(o: Opts): Promise<SceneApi> {
   const renderer = new THREE.WebGLRenderer({ canvas: o.canvas, antialias: true, powerPreference: 'high-performance' })
-  const dpr = Math.min(window.devicePixelRatio, o.small ? 1.25 : 1.6)
+  const maxDpr = Math.min(window.devicePixelRatio, o.small ? 1.25 : 1.5)
+  let dpr = Math.min(maxDpr, 1.25)
   renderer.setPixelRatio(dpr)
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.05
   renderer.outputColorSpace = THREE.SRGBColorSpace
-  renderer.shadowMap.enabled = !o.small
+  renderer.shadowMap.enabled = false
   renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
 
   const scene = new THREE.Scene()
   scene.background = new THREE.Color(0x07080b)
@@ -48,9 +50,9 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture
   scene.environmentIntensity = 0.32
 
+
   const camera = new THREE.PerspectiveCamera(o.small ? 58 : 46, 1, 0.1, 120)
   const interactive: { id: string; obj: THREE.Object3D }[] = []
-  const spinners: THREE.Object3D[] = []
   const clocks: ReturnType<typeof watch>[] = []
 
   /* ---------- real models: each slot shows its primitive until the real file is present ---------- */
@@ -58,11 +60,19 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   gltf.setMeshoptDecoder(MeshoptDecoder)
   const v1 = new THREE.Vector3(), v2 = new THREE.Vector3()
   type Fit = { len?: number; height?: number; tint?: number; flat?: boolean; mute?: boolean }
+  // models load one at a time in walking order (garage first), each in an idle moment,
+  // so arriving never stalls the frame the visitor is looking at
+  const queue: (() => Promise<void>)[] = []
+  let needsFrame = true
+  let loaded = 0
+  const idle = () => new Promise<void>((r) => ('requestIdleCallback' in window ? requestIdleCallback(() => r(), { timeout: 400 }) : setTimeout(r, 30)))
   function slot(key: string, holder: THREE.Object3D, fallback: THREE.Object3D, fit: Fit) {
     holder.add(fallback)
     const entry = key ? AVAILABLE_MODELS[key] : undefined
     if (!entry) return
-    gltf.load(`/models/${entry.file}`, (g) => {
+    queue.push(async () => {
+      const g = await gltf.loadAsync(`/models/${entry.file}`)
+      await idle()
       const obj = g.scene
       if (fit.flat) {
         // lay it down: the thinnest axis becomes vertical, so a watch rests dial-up
@@ -101,26 +111,50 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
       b.setFromObject(wrap); const c = b.getCenter(v2)
       wrap.position.set(-c.x, -b.min.y, -c.z)
       const outer = new THREE.Group(); outer.add(wrap)
-      outer.traverse((m) => { if ((m as THREE.Mesh).isMesh) { m.castShadow = !o.small; m.receiveShadow = true } })
+      outer.traverse((m) => {
+        const mesh = m as THREE.Mesh
+        if (!mesh.isMesh) return
+        mesh.castShadow = false; mesh.receiveShadow = false
+        // upload textures now, in idle time, instead of on the first frame that shows them
+        for (const mat of ([] as THREE.Material[]).concat(mesh.material)) {
+          for (const v of Object.values(mat)) if (v && (v as THREE.Texture).isTexture) renderer.initTexture(v as THREE.Texture)
+        }
+      })
+      await renderer.compileAsync(outer, camera, scene)
       holder.remove(fallback); holder.add(outer)
+      needsFrame = true
     })
+  }
+  async function drainQueue() {
+    const total = queue.length
+    o.onProgress?.(0, total)
+    for (const job of queue) {
+      try { await job() } catch { /* the primitive stays in place */ }
+      o.onProgress?.(++loaded, total)
+      await idle()
+    }
+    await warmUp()
+  }
+  // render every stop once, small and off-screen, in idle time: textures upload and shaders
+  // link now, so walking into a room for the first time never stalls
+  async function warmUp() {
+    const rt = new THREE.WebGLRenderTarget(256, 160)
+    const cam = camera.clone()
+    for (const st of STATIONS) {
+      await idle()
+      cam.position.set(...st.pos); cam.lookAt(...st.look); cam.updateMatrixWorld()
+      renderer.setRenderTarget(rt); renderer.render(scene, cam); renderer.setRenderTarget(null)
+    }
+    rt.dispose()
+    needsFrame = true
   }
 
   /* ---------- floor: a mirror under a dark stone skin, so reflections stay soft ---------- */
+  // polished stone: environment reflections only, so the room is drawn once per frame
   const floorGeo = new THREE.PlaneGeometry(78, 34)
-  if (!o.small) {
-    const mirror = new Reflector(floorGeo, {
-      textureWidth: Math.floor(innerWidth * dpr * 0.5),
-      textureHeight: Math.floor(innerHeight * dpr * 0.5),
-      color: 0x8a8a8a,
-    })
-    mirror.rotation.x = -Math.PI / 2
-    mirror.position.set(20, -0.001, 3)
-    scene.add(mirror)
-  }
   const stone = new THREE.Mesh(
     floorGeo,
-    new THREE.MeshStandardMaterial({ color: 0x0f0f10, roughness: 0.32, metalness: 0.1, transparent: !o.small, opacity: o.small ? 1 : 0.86 }),
+    new THREE.MeshPhysicalMaterial({ color: 0x0e0e0f, roughness: 0.22, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.12 }),
   )
   stone.rotation.x = -Math.PI / 2
   stone.position.set(20, 0, 3)
@@ -181,7 +215,23 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   for (let i = 0; i < 3; i++) { const s = box(8, 0.12, 0.6, new THREE.MeshStandardMaterial({ color: 0x141416, roughness: 0.2 })); s.position.set(0, -0.06 - i * 0.12, 6.4 + i * 0.6); scene.add(s) }
   const plaque = placard(['Shreyansh Sancheti', 'Private showroom', 'Bengaluru']); plaque.position.set(3.0, 0.4, 6.6); plaque.rotation.y = -0.2; scene.add(plaque)
 
+  await idle()
   /* ---------- garage: the career, oldest to newest ---------- */
+  // one radial texture shared by every contact shadow
+  const contactShadow = (() => {
+    const c = document.createElement('canvas'); c.width = c.height = 128
+    const x = c.getContext('2d')!
+    const g = x.createRadialGradient(64, 64, 4, 64, 64, 64)
+    g.addColorStop(0, 'rgba(0,0,0,.85)'); g.addColorStop(0.55, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)')
+    x.fillStyle = g; x.fillRect(0, 0, 128, 128)
+    return new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false })
+  })()
+  // three wide spots light the five plinths: fewer lights keeps every shader small
+  for (const lx of [-6.75, 0, 6.75]) {
+    const spot = new THREE.SpotLight(0xffd8ad, o.small ? 60 : 85, 0, 0.62, 0.65, 2)
+    spot.position.set(lx, 4.8, -0.6); spot.target.position.set(lx, 0.3, -2.2)
+    scene.add(spot, spot.target)
+  }
   VEHICLES.forEach((v) => {
     const table = new THREE.Group(); table.position.set(v.x, 0, -2.2)
     table.add(plinth(v.kind === 'motorcycle' ? 1.6 : 2.25))
@@ -190,18 +240,18 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     const holder = new THREE.Group(); holder.position.y = 0.14; holder.rotation.y = 2.25
     slot(v.model, holder, fallback, { len: v.len * 0.86, tint: 'tint' in v ? (v as { tint: number }).tint : undefined })
     const spinner = new THREE.Group(); spinner.add(holder); table.add(spinner)
-    spinners.push(spinner)
     scene.add(table)
     const sign = placard(o.labels[v.job] ?? [v.job]); sign.position.set(v.x + 1.9, 0, 0.35); sign.rotation.y = -0.35; scene.add(sign)
     interactive.push({ id: v.job, obj: table }, { id: v.job, obj: sign })
-    const spot = new THREE.SpotLight(0xffd8ad, o.small ? 36 : 55, 0, 0.42, 0.55, 2)
-    spot.position.set(v.x, 4.8, -1.4); spot.target.position.set(v.x, 0.3, -2.2)
-    spot.castShadow = !o.small; spot.shadow.mapSize.set(512, 512); spot.shadow.bias = -0.0005
-    scene.add(spot, spot.target)
+    // a soft painted shadow under each vehicle reads like a real one in a still room
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(v.kind === 'motorcycle' ? 2.6 : 5.6, v.kind === 'motorcycle' ? 1.2 : 2.6), contactShadow)
+    shadow.rotation.x = -Math.PI / 2; shadow.rotation.z = -(2.25 - Math.PI / 2); shadow.position.y = 0.146
+    table.add(shadow)
     const disc = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), MAT.light(0xfff1dc, 3)); disc.rotation.x = Math.PI / 2; disc.position.set(v.x, 4.99, -1.4); scene.add(disc)
   })
   scene.add(new THREE.HemisphereLight(0x8a8fa0, 0x120d09, 0.25))
 
+  await idle()
   /* ---------- workshop: skills as magnets on a pegboard, projects on a lightbox ---------- */
   const wBack = box(16, 5, 0.2, walnut); wBack.position.set(20, 2.5, -6.1); scene.add(wBack)
   const wFront = box(16, 5, 0.2, plaster); wFront.position.set(20, 2.5, 6.1); scene.add(wFront)
@@ -260,8 +310,8 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     lbB.map = lbA.map; lbB.opacity = 1; lbA.map = shots[(i + shots.length) % shots.length]; lbA.opacity = 0
     lbA.needsUpdate = lbB.needsUpdate = true; projectFade = o.reduce ? 1 : 0
   }
-  const workshopLight = new THREE.PointLight(0xffd9b0, 8, 10, 2); workshopLight.position.set(20, 4.4, 0); scene.add(workshopLight)
 
+  await idle()
   /* ---------- wardrobe: suits, the watch drawer and the hobbies wall ---------- */
   const lBack = box(12, 5, 0.2, walnut); lBack.position.set(34, 2.5, -5.1); scene.add(lBack)
   const lFront = box(12, 5, 0.2, plaster); lFront.position.set(34, 2.5, 6.1); scene.add(lFront)
@@ -291,8 +341,8 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     scene.add(f)
     interactive.push({ id: 'hobbies', obj: f })
   })
-  const hobbyLight = new THREE.SpotLight(0xfff0dc, 26, 0, 0.6, 0.6, 2); hobbyLight.position.set(32.6, 4.8, -1.6); hobbyLight.target.position.set(32.6, 2.2, -5)
-  scene.add(hobbyLight, hobbyLight.target)
+  const wardrobeLight = new THREE.SpotLight(0xfff0dc, 48, 0, 0.95, 0.6, 2); wardrobeLight.position.set(34.2, 4.8, 1.4); wardrobeLight.target.position.set(34.0, 1.0, -2.6)
+  scene.add(wardrobeLight, wardrobeLight.target)
 
   // the watch drawer: the four pieces, set out on suede
   const island = new THREE.Group(); island.position.set(35.7, 0, 0.45)
@@ -316,9 +366,9 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   })
   island.add(drawer)
   scene.add(island)
-  const islandLight = new THREE.SpotLight(0xfff0dc, 40, 0, 0.45, 0.6, 2); islandLight.position.set(35.7, 4.6, 1.6); islandLight.target.position.set(35.7, 0.6, 1.2)
-  scene.add(islandLight, islandLight.target)
 
+
+  await idle()
   /* ---------- hall of fame, and the way out ---------- */
   const hBack = box(12, 5, 0.2, walnut); hBack.position.set(46, 2.5, -5.1); scene.add(hBack)
   const hFront = box(12, 5, 0.2, plaster); hFront.position.set(46, 2.5, 6.1); scene.add(hFront)
@@ -354,10 +404,8 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     interactive.push({ id: 'exit', obj: banner })
   }
   const chair = loungeChair(); chair.position.set(49.6, 0, -2.6); chair.rotation.y = -0.6; scene.add(chair)
-  const exitGlow = new THREE.PointLight(0xffe2c0, 10, 9, 2); exitGlow.position.set(49.5, 3.8, 0.6); scene.add(exitGlow)
 
   /* ---------- outside: a cool street light for contrast ---------- */
-  const street = new THREE.PointLight(0x8fa8d8, 14, 18, 2); street.position.set(-5, 5, 12); scene.add(street)
   const spill = new THREE.PointLight(0xffd2a0, 18, 10, 2); spill.position.set(0, 3, 4); scene.add(spill)
 
   /* ---------- camera rail ---------- */
@@ -409,6 +457,20 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   resize()
   const ro = new ResizeObserver(resize); ro.observe(o.canvas)
 
+  // render scale follows the device: drop it when frames run long, raise it when there is room
+  let frameAvg = 16, sinceTune = 0
+  const tune = (dt: number) => {
+    frameAvg += (dt * 1000 - frameAvg) * 0.05
+    sinceTune += dt
+    if (sinceTune < 2) return
+    sinceTune = 0
+    const next = frameAvg > 24 ? Math.max(0.75, dpr - 0.25) : frameAvg < 14 ? Math.min(maxDpr, dpr + 0.25) : dpr
+    if (next !== dpr) { dpr = next; renderer.setPixelRatio(dpr); resize() }
+  }
+  const lastCam = new THREE.Vector3(), lastLook = new THREE.Vector3()
+  let quietFor = 0
+  const clocksNear = () => current > STATIONS.findIndex((st) => st.id === 'wardrobe') - 0.8 && current < STATIONS.findIndex((st) => st.id === 'watches') + 0.8
+
   const tick = () => {
     if (!running) return
     const dt = Math.min(clock.getDelta(), 0.05)
@@ -419,7 +481,6 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     camera.position.set(pos.x + sway.x * 0.35, pos.y - sway.y * 0.2, pos.z)
     lookNow.lerp(look, Math.min(1, dt * 4))
     camera.lookAt(lookNow)
-    if (!paused) for (const s of spinners) s.rotation.y += dt * 0.08
     if (projectFade < 1) { projectFade = Math.min(1, projectFade + dt * 2.2); lbA.opacity = projectFade; lbB.opacity = 1 - projectFade }
     if (doorsOpen && doorT < 1) {
       doorT = o.reduce ? 1 : Math.min(1, doorT + dt * 0.6)
@@ -429,8 +490,17 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
     // every watch in the room keeps Bengaluru time
     const now = new Date(Date.now() + 5.5 * 3600e3)
     const s = now.getUTCSeconds() + now.getUTCMilliseconds() / 1000, m = now.getUTCMinutes() + s / 60, h = (now.getUTCHours() % 12) + m / 60
-    for (const c of clocks) { c.second.rotation.y = -(s / 60) * Math.PI * 2; c.minute.rotation.y = -(m / 60) * Math.PI * 2; c.hour.rotation.y = -(h / 12) * Math.PI * 2 }
-    renderer.render(scene, camera)
+    if (!paused) for (const c of clocks) { c.second.rotation.y = -(s / 60) * Math.PI * 2; c.minute.rotation.y = -(m / 60) * Math.PI * 2; c.hour.rotation.y = -(h / 12) * Math.PI * 2 }
+    // draw only when something on screen changed; a still room costs nothing
+    const moving = camera.position.distanceToSquared(lastCam) > 1e-7 || lookNow.distanceToSquared(lastLook) > 1e-7
+    const busy = moving || projectFade < 1 || (doorsOpen && doorT < 1) || needsFrame || (clocksNear() && !paused)
+    quietFor = busy ? 0 : quietFor + dt
+    if (busy || quietFor < 0.25) {
+      renderer.render(scene, camera)
+      needsFrame = false
+      tune(dt)
+    }
+    lastCam.copy(camera.position); lastLook.copy(lookNow)
     raf = requestAnimationFrame(tick)
   }
   // compile every shader off the critical path before the first frame is drawn
@@ -439,6 +509,7 @@ export async function createShowroom(o: Opts): Promise<SceneApi> {
   const onVis = () => { if (document.hidden) { running = false; cancelAnimationFrame(raf) } else if (!running) { running = true; clock.getDelta(); tick() } }
   document.addEventListener('visibilitychange', onVis)
   tick()
+  void drainQueue()
 
   return {
     setStation: (k) => { target = Math.max(0, Math.min(STATIONS.length - 1, k)) },

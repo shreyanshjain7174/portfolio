@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react'
 
 const BLINDS = 8
 
-export function Loader({ ready, onEnter }: { ready: boolean; onEnter: () => void }) {
+export function Loader({ ready, onEnter, pieces }: { ready: boolean; onEnter: () => void; pieces: { done: number; total: number } | null }) {
   const [count, setCount] = useState(0)
   const [pressed, setPressed] = useState(false)
   const done = count >= 100
@@ -76,7 +76,7 @@ export function Loader({ ready, onEnter }: { ready: boolean; onEnter: () => void
                     className="group relative grid h-28 w-28 place-items-center rounded-full border border-ink/40 text-[15px]"
                   >
                     <motion.span
-                      className="absolute inset-[-10px] rounded-full border border-warm/50"
+                      className="pointer-events-none absolute inset-[-10px] rounded-full border border-warm/50"
                       animate={{ scale: [1, 1.12, 1], opacity: [0.7, 0, 0.7] }}
                       transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
                     />
@@ -93,7 +93,8 @@ export function Loader({ ready, onEnter }: { ready: boolean; onEnter: () => void
                 )}
               </AnimatePresence>
             </div>
-            <p className="mt-8 text-[15px] text-muted">{pressed ? 'One moment' : done ? 'The lights are on. Press Enter or the button.' : 'Lighting the showroom'}</p>
+            <p className="mt-8 text-[15px] text-muted">{pressed ? 'One moment' : done ? 'The lights are on. Press Enter or the button.' : 'Lighting the showroom'}
+              {pieces && pieces.total ? <span className="tnum"> · {pieces.done} of {pieces.total} pieces on the floor</span> : null}</p>
             <a href="/plain" className="mt-10 text-[15px] underline underline-offset-4 hover:text-warm">Skip to the plain view</a>
           </motion.div>
         </motion.div>
