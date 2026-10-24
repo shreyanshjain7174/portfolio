@@ -42,3 +42,12 @@ next-env.d.ts
 .trae/
 skills/
 skills-lock.json
+
+# tool output
+.taste-skill/
+.playwright-mcp/
+
+# raw model downloads (optimised copies live in public/models)
+models-src/*.glb
+models-src/*.zip
+models-src/*/
