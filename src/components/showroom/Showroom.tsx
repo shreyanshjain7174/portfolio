@@ -110,8 +110,9 @@ export function Showroom({ live = {} }: { live?: Record<string, RepoLive> }) {
     const once = () => { build(); evs.forEach((e) => removeEventListener(e, once)) }
     evs.forEach((e) => addEventListener(e, once, { passive: true }))
     const soon = () => ('requestIdleCallback' in window ? requestIdleCallback(once, { timeout: 2500 }) : setTimeout(once, 1200))
-    // without a real GPU, shader compiles take seconds: wait for the visitor instead of building unasked
-    if (!softwareGL()) {
+    // on phones and machines without a real GPU, building unasked would block the main thread:
+    // wait for the visitor's first touch instead
+    if (innerWidth >= 860 && !softwareGL()) {
       if (document.readyState === 'complete') soon()
       else addEventListener('load', soon, { once: true })
     }

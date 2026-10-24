@@ -8,8 +8,8 @@ import type { RepoLive } from '@/lib/github'
 import { PROJECT_IMAGES, VEHICLES, WATCHES } from './stations'
 
 /* Words rise out of a mask, one after another (adapted from the 21st.dev "Text Reveal (Mask)" pattern). */
-export function MaskText({ text, className, as: Tag = 'h2' }: { text: string; className?: string; as?: 'h1' | 'h2' | 'h3' }) {
-  const reduce = useReducedMotion()
+export function MaskText({ text, className, as: Tag = 'h2', still }: { text: string; className?: string; as?: 'h1' | 'h2' | 'h3'; still?: boolean }) {
+  const reduce = useReducedMotion() || still
   const words = text.split(' ')
   const MotionTag = Tag === 'h1' ? motion.h1 : Tag === 'h3' ? motion.h3 : motion.h2
   return (
@@ -36,8 +36,8 @@ export function MaskText({ text, className, as: Tag = 'h2' }: { text: string; cl
   )
 }
 
-function Rise({ children, i = 0, className }: { children: ReactNode; i?: number; className?: string }) {
-  const reduce = useReducedMotion()
+function Rise({ children, i = 0, className, still }: { children: ReactNode; i?: number; className?: string; still?: boolean }) {
+  const reduce = useReducedMotion() || still
   return (
     <motion.div
       className={className}
@@ -127,9 +127,10 @@ function ago(iso: string) {
 export function placardFor(id: string, ctx: PlacardCtx): ReactNode {
   if (id === 'entrance') return (
     <Plate>
-      <MaskText as="h1" text="Shreyansh Sancheti" className="font-display text-[clamp(2.75rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.02em]" />
-      <Rise i={1}><p className="mt-5 text-lg">{PERSON.role} at {PERSON.org}. I build open-source infrastructure for AI agents, in public. This is my showroom.</p></Rise>
-      <Rise i={2}><p className="mt-4 text-[15px] text-muted">Scroll to walk through. Click anything on display.</p></Rise>
+      {/* painted with the first frame: it sits behind the loader and is the largest text on load */}
+      <MaskText as="h1" still text="Shreyansh Sancheti" className="font-display text-[clamp(2.75rem,5vw,4.5rem)] leading-[0.95] tracking-[-0.02em]" />
+      <Rise i={1} still><p className="mt-5 text-lg">{PERSON.role} at {PERSON.org}. I build open-source infrastructure for AI agents, in public. This is my showroom.</p></Rise>
+      <Rise i={2} still><p className="mt-4 text-[15px] text-muted">Scroll to walk through. Click anything on display.</p></Rise>
     </Plate>
   )
   if (id === 'garage') return (
